@@ -17,6 +17,15 @@ public class User {
     @Column(nullable = false)
     private String password;
 
+    @Column(unique = true, nullable = false)
+    private String email;
+
+    private boolean emailVerified = false;
+
+    private String verificationToken;
+
+    private String resetPasswordToken;
+
     private int totalXp = 0;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -28,9 +37,10 @@ public class User {
     // Конструкторы
     public User() {}
 
-    public User(String username, String password) {
+    public User(String username, String password, String email) {
         this.username = username;
         this.password = password;
+        this.email = email;
     }
 
     // Геттеры и сеттеры
@@ -42,6 +52,18 @@ public class User {
 
     public String getPassword() { return password; }
     public void setPassword(String password) { this.password = password; }
+
+    public String getEmail() { return email; }
+    public void setEmail(String email) { this.email = email; }
+
+    public boolean isEmailVerified() { return emailVerified; }
+    public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
+
+    public String getVerificationToken() { return verificationToken; }
+    public void setVerificationToken(String verificationToken) { this.verificationToken = verificationToken; }
+
+    public String getResetPasswordToken() { return resetPasswordToken; }
+    public void setResetPasswordToken(String resetPasswordToken) { this.resetPasswordToken = resetPasswordToken; }
 
     public int getTotalXp() { return totalXp; }
     public void setTotalXp(int totalXp) { this.totalXp = totalXp; }

@@ -26,6 +26,7 @@ public class AuthController {
 
     @PostMapping("/register")
     public String register(@RequestParam String username,
+                           @RequestParam String email,
                            @RequestParam String password,
                            @RequestParam String confirmPassword,
                            Model model) {
@@ -33,9 +34,9 @@ public class AuthController {
             model.addAttribute("error", "Пароли не совпадают");
             return "register";
         }
-        boolean registered = userService.registerUser(username, password);
+        boolean registered = userService.registerUser(username, password, email);
         if (!registered) {
-            model.addAttribute("error", "Пользователь с таким именем уже существует");
+            model.addAttribute("error", "Имя пользователя или email уже заняты");
             return "register";
         }
         return "redirect:/login?registered";

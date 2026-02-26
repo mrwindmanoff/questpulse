@@ -15,17 +15,21 @@ public class UserService {
     @Autowired
     private PasswordEncoder passwordEncoder;
 
-    public boolean registerUser(String username, String password) {
-        if (userRepository.existsByUsername(username)) {
+    public boolean registerUser(String username, String password, String email) {
+        if (userRepository.existsByUsername(username) || userRepository.existsByEmail(email)) {
             return false;
         }
-        User user = new User(username, passwordEncoder.encode(password));
+        User user = new User(username, passwordEncoder.encode(password), email);
         userRepository.save(user);
         return true;
     }
 
     public User findByUsername(String username) {
         return userRepository.findByUsername(username).orElse(null);
+    }
+
+    public User findByEmail(String email) {
+        return userRepository.findByEmail(email).orElse(null);
     }
 
     public void save(User user) {
