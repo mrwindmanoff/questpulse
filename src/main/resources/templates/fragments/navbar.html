@@ -13,7 +13,8 @@
             <div sec:authorize="isAuthenticated()">
                 Привет, <span sec:authentication="name"></span>
                 (Звание: <span th:text="${currentUser != null ? currentUser.rank : 'Новичок'}">Новичок</span>)
-                <a th:href="@{/logout}">[Выйти]</a>
+                | <a href="/profile">Профиль</a>
+                | <a th:href="@{/logout}">Выйти</a>
             </div>
             <div sec:authorize="!isAuthenticated()">
                 <a href="/login">[Вход]</a> |

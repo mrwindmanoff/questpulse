@@ -19,6 +19,11 @@ public class AuthController {
         return "login";
     }
 
+    @GetMapping("/forgot-password")
+    public String forgotPassword() {
+        return "forgot-password";
+    }
+
     @GetMapping("/register")
     public String registerForm() {
         return "register";

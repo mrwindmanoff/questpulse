@@ -151,6 +151,7 @@ label {
 }
 input[type="text"],
 input[type="password"],
+input[type="email"],    
 textarea,
 select {
     width: 100%;
@@ -183,4 +184,22 @@ nav a {
 }
 nav a:hover {
     text-shadow: 0 0 10px #f0f;
+}
+.profile-card {
+    background: #1a1f2f;
+    border: 2px solid #0ff;
+    padding: 2rem;
+    margin: 2rem 0;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+}
+.profile-card p {
+    font-size: 1.2rem;
+    margin: 1rem 0;
+    border-bottom: 1px dashed #0ff;
+    padding-bottom: 0.5rem;
+}
+.profile-card strong {
+    color: #f0f;
+    display: inline-block;
+    width: 120px;
 }

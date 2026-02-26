@@ -1,0 +1,24 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Профиль</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1>Личный кабинет</h1>
+
+    <div class="profile-card">
+        <p><strong>Никнейм:</strong> <span th:text="${user.username}">username</span></p>
+        <p><strong>Email:</strong> <span th:text="${user.email}">email</span></p>
+        <p><strong>Опыт (XP):</strong> <span th:text="${user.totalXp}">0</span></p>
+        <p><strong>Звание:</strong> <span th:text="${user.rank}">Новичок</span></p>
+    </div>
+
+    <p><a href="/">← На главную</a></p>
+</div>
+</body>
+</html>
