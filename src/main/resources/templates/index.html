@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Task Solver</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1>Задачи</h1>
+
+    <div sec:authorize="isAuthenticated()">
+        <a href="/tasks/create" class="btn btn-primary">+ Создать задачу</a>
+    </div>
+
+    <div th:if="${message}" class="alert success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert error" th:text="${error}"></div>
+
+    <div class="task-grid">
+        <div class="task-card" th:each="task : ${tasks}">
+            <h3 th:text="${task.title}">Название</h3>
+            <p><strong>Автор:</strong> <span th:text="${task.author.username}">Автор</span></p>
+            <p><strong>Сложность:</strong>
+                <span class="difficulty" th:text="${task.difficulty}"
+                      th:classappend="|difficulty-${task.difficulty}|">EASY</span>
+            </p>
+            <p><strong>Награда:</strong> <span th:text="${task.rewardXp}">10</span> XP</p>
+            <div class="task-actions">
+                <a th:href="@{|/tasks/${task.id}/solve|}" class="btn">Решить</a>
+                
+                <!-- Кнопка удаления только для автора -->
+                <a th:if="${currentUser != null and task.author.id == currentUser.id}"
+                   th:href="@{|/tasks/${task.id}/delete|}"
+                   class="btn btn-danger"
+                   onclick="return confirm('Удалить задачу?')">Удалить</a>
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

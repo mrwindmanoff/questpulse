@@ -1,0 +1,112 @@
+package com.example.tasksolver.controller;
+
+import com.example.tasksolver.dto.TaskForm;
+import com.example.tasksolver.model.User;
+import com.example.tasksolver.service.TaskService;
+import com.example.tasksolver.service.UserService;
+import jakarta.validation.Valid;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.*;
+import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+@Controller
+@RequestMapping("/tasks")
+public class TaskController {
+
+    @Autowired
+    private TaskService taskService;
+
+    @Autowired
+    private UserService userService;
+
+    private User getCurrentUser() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return null;
+        }
+        String username = auth.getName();
+        return userService.findByUsername(username);
+    }
+
+    @GetMapping("/create")
+    public String showCreateForm(Model model) {
+        model.addAttribute("taskForm", new TaskForm());
+        return "task-create";
+    }
+
+    @PostMapping("/create")
+    public String createTask(@Valid @ModelAttribute("taskForm") TaskForm form,
+                             BindingResult result,
+                             RedirectAttributes redirectAttributes) {
+        if (result.hasErrors()) {
+            return "task-create";
+        }
+        User author = getCurrentUser();
+        if (author == null) {
+            return "redirect:/login";
+        }
+        taskService.createTask(form, author);
+        redirectAttributes.addFlashAttribute("message", "Задача успешно создана!");
+        return "redirect:/";
+    }
+
+    @GetMapping("/{id}/solve")
+    public String showSolveForm(@PathVariable Long id, Model model) {
+        var task = taskService.findTaskById(id);
+        if (task == null) {
+            return "redirect:/?error=notfound";
+        }
+        model.addAttribute("task", task);
+        return "task-solve";
+    }
+
+    @PostMapping("/{id}/solve")
+    public String solveTask(@PathVariable Long id,
+                            @RequestParam("answer") String answer,
+                            RedirectAttributes redirectAttributes) {
+        User solver = getCurrentUser();
+        if (solver == null) {
+            return "redirect:/login";
+        }
+
+        var result = taskService.solveTask(id, answer, solver);
+        switch (result) {
+            case SUCCESS:
+                redirectAttributes.addFlashAttribute("message", "Верно! +XP");
+                break;
+            case CANNOT_SOLVE_OWN_TASK:
+                redirectAttributes.addFlashAttribute("error", "Вы не можете решать свою собственную задачу");
+                break;
+            case ALREADY_SOLVED:
+                redirectAttributes.addFlashAttribute("error", "Вы уже решали эту задачу");
+                break;
+            case WRONG_ANSWER:
+                redirectAttributes.addFlashAttribute("error", "Неверный ответ");
+                break;
+            case TASK_NOT_FOUND:
+                redirectAttributes.addFlashAttribute("error", "Задача не найдена");
+                break;
+        }
+        return "redirect:/tasks/" + id + "/solve";
+    }
+
+    @GetMapping("/{id}/delete")
+    public String deleteTask(@PathVariable Long id, RedirectAttributes redirectAttributes) {
+        User currentUser = getCurrentUser();
+        if (currentUser == null) {
+            return "redirect:/login";
+        }
+        boolean deleted = taskService.deleteTask(id, currentUser);
+        if (deleted) {
+            redirectAttributes.addFlashAttribute("message", "Задача удалена");
+        } else {
+            redirectAttributes.addFlashAttribute("error", "Не удалось удалить задачу (возможно, вы не автор)");
+        }
+        return "redirect:/";
+    }
+}

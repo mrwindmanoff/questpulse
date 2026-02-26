@@ -1,0 +1,186 @@
+body {
+    font-family: 'Courier New', monospace;
+    margin: 0;
+    padding: 0;
+    background-color: #0a0f0f;
+    color: #c0f0f0;
+    line-height: 1.6;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+h1, h2, h3 {
+    color: #0ff;
+    text-shadow: 0 0 5px #0ff, 0 0 10px #0ff;
+    font-weight: normal;
+}
+
+a {
+    color: #f0f;
+    text-decoration: none;
+    transition: 0.3s;
+}
+a:hover {
+    text-shadow: 0 0 5px #f0f;
+}
+
+.btn, button {
+    display: inline-block;
+    background-color: transparent;
+    color: #0ff;
+    padding: 0.5rem 1rem;
+    border: 2px solid #0ff;
+    border-radius: 0;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    transition: 0.3s;
+    box-shadow: 0 0 5px #0ff;
+}
+.btn:hover, button:hover {
+    background-color: #0ff;
+    color: #0a0f0f;
+    box-shadow: 0 0 20px #0ff;
+}
+.btn-primary {
+    border-color: #f0f;
+    color: #f0f;
+    box-shadow: 0 0 5px #f0f;
+}
+.btn-primary:hover {
+    background-color: #f0f;
+    color: #0a0f0f;
+    box-shadow: 0 0 20px #f0f;
+}
+.btn-danger {
+    border-color: #ff4444;
+    color: #ff4444;
+    box-shadow: 0 0 5px #ff4444;
+}
+.btn-danger:hover {
+    background-color: #ff4444;
+    color: #0a0f0f;
+    box-shadow: 0 0 20px #ff4444;
+}
+
+.alert {
+    padding: 0.75rem;
+    margin: 1rem 0;
+    border: 2px solid;
+    font-weight: bold;
+}
+.success {
+    border-color: #0f0;
+    color: #0f0;
+    text-shadow: 0 0 5px #0f0;
+}
+.error {
+    border-color: #f00;
+    color: #f00;
+    text-shadow: 0 0 5px #f00;
+}
+
+.task-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1.5rem;
+}
+.task-card {
+    background: #1a1f2f;
+    border: 2px solid #0ff;
+    padding: 1.5rem;
+    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
+    transition: 0.3s;
+    position: relative;
+}
+.task-card:hover {
+    box-shadow: 0 0 30px #0ff;
+    transform: translateY(-5px);
+}
+.task-card h3 {
+    margin-top: 0;
+    border-bottom: 1px dashed #0ff;
+    padding-bottom: 0.5rem;
+}
+.task-actions {
+    display: flex;
+    gap: 1rem;
+    margin-top: 1rem;
+}
+
+.difficulty-EASY { color: #0f0; text-shadow: 0 0 5px #0f0; }
+.difficulty-MEDIUM { color: #ff0; text-shadow: 0 0 5px #ff0; }
+.difficulty-HARD { color: #f00; text-shadow: 0 0 5px #f00; }
+
+table {
+    width: 100%;
+    border-collapse: collapse;
+    background: #1a1f2f;
+    border: 2px solid #0ff;
+}
+th, td {
+    padding: 0.75rem;
+    text-align: left;
+    border-bottom: 1px solid #0ff;
+}
+th {
+    background-color: #0a0f0f;
+    color: #f0f;
+    text-shadow: 0 0 5px #f0f;
+}
+tr:hover {
+    background-color: #2a2f3f;
+}
+
+form div {
+    margin-bottom: 1rem;
+}
+label {
+    display: block;
+    margin-bottom: 0.25rem;
+    color: #f0f;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+}
+input[type="text"],
+input[type="password"],
+textarea,
+select {
+    width: 100%;
+    padding: 0.5rem;
+    background: #0a0f0f;
+    border: 2px solid #0ff;
+    color: #c0f0f0;
+    font-family: 'Courier New', monospace;
+    font-size: 1rem;
+}
+input:focus, textarea:focus, select:focus {
+    outline: none;
+    box-shadow: 0 0 10px #0ff;
+}
+
+nav {
+    background: #0a0f0f;
+    padding: 1rem;
+    display: flex;
+    gap: 2rem;
+    align-items: center;
+    border-bottom: 2px solid #0ff;
+    box-shadow: 0 0 20px #0ff;
+}
+nav a {
+    color: #f0f;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-weight: bold;
+}
+nav a:hover {
+    text-shadow: 0 0 10px #f0f;
+}

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Создать задачу</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1>Создать новую задачу</h1>
+
+    <form th:action="@{/tasks/create}" th:object="${taskForm}" method="post">
+        <div>
+            <label>Название:</label>
+            <input type="text" th:field="*{title}" required>
+            <div th:if="${#fields.hasErrors('title')}" th:errors="*{title}" class="error">Ошибка</div>
+        </div>
+        <div>
+            <label>Условие:</label>
+            <textarea th:field="*{description}" rows="5" required></textarea>
+        </div>
+        <div>
+            <label>Правильный ответ:</label>
+            <input type="text" th:field="*{correctAnswer}" required>
+        </div>
+        <div>
+            <label>Сложность:</label>
+            <select th:field="*{difficulty}">
+                <option th:each="diff : ${T(com.example.tasksolver.model.Difficulty).values()}"
+                        th:value="${diff}" th:text="${diff}">EASY</option>
+            </select>
+        </div>
+        <button type="submit">Создать</button>
+    </form>
+</div>
+</body>
+</html>

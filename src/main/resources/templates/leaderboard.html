@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Таблица лидеров</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1>Таблица лидеров</h1>
+    <table>
+        <thead>
+        <tr>
+            <th>#</th>
+            <th>Имя пользователя</th>
+            <th>Звание</th>
+            <th>Всего XP</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user, iter : ${users}">
+            <td th:text="${iter.index + 1}">1</td>
+            <td th:text="${user.username}">user</td>
+            <td th:text="${user.rank}">Новичок</td>
+            <td th:text="${user.totalXp}">0</td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

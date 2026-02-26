@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Решить задачу</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1 th:text="${task.title}">Задача</h1>
+    <p><strong>Автор:</strong> <span th:text="${task.author.username}">Автор</span></p>
+    <p><strong>Сложность:</strong> <span th:text="${task.difficulty}">EASY</span></p>
+    <p><strong>Награда:</strong> <span th:text="${task.rewardXp}">10</span> XP</p>
+
+    <div class="task-description">
+        <h3>Условие:</h3>
+        <p th:text="${task.description}">Описание</p>
+    </div>
+
+    <div th:if="${message}" class="alert success" th:text="${message}"></div>
+    <div th:if="${error}" class="alert error" th:text="${error}"></div>
+
+    <form method="post" th:action="@{|/tasks/${task.id}/solve|}">
+        <div>
+            <label>Ваш ответ:</label>
+            <input type="text" name="answer" required>
+        </div>
+        <button type="submit">Отправить</button>
+    </form>
+
+    <p><a href="/">← К списку задач</a></p>
+</div>
+</body>
+</html>
