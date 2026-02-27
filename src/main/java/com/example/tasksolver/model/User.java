@@ -1,6 +1,7 @@
 package com.example.tasksolver.model;
 
 import jakarta.persistence.*;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -26,6 +27,8 @@ public class User {
 
     private String resetPasswordToken;
 
+    private LocalDateTime resetPasswordTokenExpiry;
+
     private int totalXp = 0;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
@@ -34,7 +37,6 @@ public class User {
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SolvedTask> solvedTasks = new ArrayList<>();
 
-    // Конструкторы
     public User() {}
 
     public User(String username, String password, String email) {
@@ -65,13 +67,15 @@ public class User {
     public String getResetPasswordToken() { return resetPasswordToken; }
     public void setResetPasswordToken(String resetPasswordToken) { this.resetPasswordToken = resetPasswordToken; }
 
+    public LocalDateTime getResetPasswordTokenExpiry() { return resetPasswordTokenExpiry; }
+    public void setResetPasswordTokenExpiry(LocalDateTime resetPasswordTokenExpiry) { this.resetPasswordTokenExpiry = resetPasswordTokenExpiry; }
+
     public int getTotalXp() { return totalXp; }
     public void setTotalXp(int totalXp) { this.totalXp = totalXp; }
 
     public List<Task> getCreatedTasks() { return createdTasks; }
     public List<SolvedTask> getSolvedTasks() { return solvedTasks; }
 
-    // Метод для вычисления звания на основе XP
     public String getRank() {
         if (totalXp < 100) return "Новичок";
         else if (totalXp < 500) return "Ученик";

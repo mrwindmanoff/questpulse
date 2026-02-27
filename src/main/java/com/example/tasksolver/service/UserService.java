@@ -32,6 +32,10 @@ public class UserService {
         return userRepository.findByEmail(email).orElse(null);
     }
 
+    public User findByResetPasswordToken(String token) {
+        return userRepository.findByResetPasswordToken(token).orElse(null);
+    }
+
     public void save(User user) {
         userRepository.save(user);
     }
