@@ -79,9 +79,14 @@ public class AuthController {
         String resetLink = baseUrl + "/reset-password?token=" + token;
         String message = "To reset your password, click the link: " + resetLink;
 
-        emailService.sendSimpleEmail(user.getEmail(), "Восстановление пароля на QuestPulse", message);
+        try {
+            emailService.sendSimpleEmail(user.getEmail(), "Восстановление пароля на QuestPulse", message);
+            model.addAttribute("success", "Инструкция по сбросу пароля отправлена на ваш email");
+        } catch (Exception e) {
+            model.addAttribute("error", "Ошибка при отправке письма: " + e.getMessage());
+            e.printStackTrace(); // для логов
+        }
 
-        model.addAttribute("success", "Инструкция по сбросу пароля отправлена на ваш email");
         return "forgot-password";
     }
 
