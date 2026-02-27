@@ -11,7 +11,7 @@
         <a href="/leaders">Таблица лидеров</a>
         <div style="margin-left: auto;">
             <div sec:authorize="isAuthenticated()">
-                Привет, <span sec:authentication="name"></span>
+                Привет, <a th:href="@{'/user/' + ${#authentication.name}}" style="color: #f0f; text-decoration: underline;">[[${#authentication.name}]]</a>
                 (Звание: <span th:text="${currentUser != null ? currentUser.rank : 'Новичок'}">Новичок</span>)
                 | <a href="/profile">Профиль</a>
                 | <a th:href="@{/logout}">Выйти</a>

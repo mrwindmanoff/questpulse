@@ -22,7 +22,9 @@
         <tbody>
         <tr th:each="user, iter : ${users}">
             <td th:text="${iter.index + 1}">1</td>
-            <td th:text="${user.username}">user</td>
+            <td>
+                <a th:href="@{'/user/' + ${user.username}}" th:text="${user.username}" style="color: #f0f; text-decoration: underline;">user</a>
+            </td>
             <td th:text="${user.rank}">Новичок</td>
             <td th:text="${user.totalXp}">0</td>
         </tr>

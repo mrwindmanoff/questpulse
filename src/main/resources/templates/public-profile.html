@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title th:text="${profileUser.username} + ' - профиль'">Профиль</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1 th:text="${profileUser.username}">Username</h1>
+
+    <div class="profile-card">
+        <p><strong>Звание:</strong> <span th:text="${profileUser.rank}">Новичок</span></p>
+        <p><strong>Опыт (XP):</strong> <span th:text="${profileUser.totalXp}">0</span></p>
+        <!-- позже добавим аватар и соцсети -->
+    </div>
+
+    <p><a href="/">← На главную</a></p>
+</div>
+</body>
+</html>

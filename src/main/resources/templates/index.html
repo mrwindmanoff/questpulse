@@ -21,7 +21,7 @@
     <div class="task-grid">
         <div class="task-card" th:each="task : ${tasks}">
             <h3 th:text="${task.title}">Название</h3>
-            <p><strong>Автор:</strong> <span th:text="${task.author.username}">Автор</span></p>
+            <p><strong>Автор:</strong> <a th:href="@{'/user/' + ${task.author.username}}" th:text="${task.author.username}" style="color: #f0f; text-decoration: underline;">Автор</a></p>
             <p><strong>Сложность:</strong>
                 <span class="difficulty" th:text="${task.difficulty}"
                       th:classappend="|difficulty-${task.difficulty}|">EASY</span>
@@ -29,8 +29,6 @@
             <p><strong>Награда:</strong> <span th:text="${task.rewardXp}">10</span> XP</p>
             <div class="task-actions">
                 <a th:href="@{|/tasks/${task.id}/solve|}" class="btn">Решить</a>
-                
-                <!-- Кнопка удаления только для автора -->
                 <a th:if="${currentUser != null and task.author.id == currentUser.id}"
                    th:href="@{|/tasks/${task.id}/delete|}"
                    class="btn btn-danger"

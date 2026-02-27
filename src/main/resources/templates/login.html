@@ -17,6 +17,9 @@
     <div th:if="${param.registered}" class="alert success">
         Регистрация прошла успешно! Войдите.
     </div>
+    <div th:if="${param.resetSuccess}" class="alert success">
+        Пароль успешно изменён! Войдите с новым паролем.
+    </div>
 
     <form method="post" th:action="@{/login}">
         <div>
