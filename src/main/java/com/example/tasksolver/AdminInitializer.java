@@ -24,10 +24,9 @@ public class AdminInitializer implements CommandLineRunner {
     @Override
     public void run(String... args) throws Exception {
         if (adminNames == null || adminNames.isBlank()) {
-            return; // нет списка админов – ничего не делаем
+            return;
         }
 
-        // Разбиваем строку с именами через запятую, удаляем пробелы
         List<String> adminUsernameList = Arrays.stream(adminNames.split(","))
                 .map(String::trim)
                 .toList();

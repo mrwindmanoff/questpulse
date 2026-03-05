@@ -95,6 +95,33 @@ public class TaskController {
         return "redirect:/tasks/" + id + "/solve";
     }
 
+    // Эндпоинт для жалобы
+    @PostMapping("/{id}/report")
+    public String reportTask(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes) {
+        User reporter = getCurrentUser();
+        if (reporter == null) {
+            return "redirect:/login";
+        }
+
+        var result = taskService.reportTask(id, reporter);
+        switch (result) {
+            case SUCCESS:
+                redirectAttributes.addFlashAttribute("message", "Жалоба отправлена! +1 XP");
+                break;
+            case CANNOT_REPORT_OWN_TASK:
+                redirectAttributes.addFlashAttribute("error", "Вы не можете жаловаться на свою задачу");
+                break;
+            case ALREADY_REPORTED:
+                redirectAttributes.addFlashAttribute("error", "Вы уже жаловались на эту задачу");
+                break;
+            case TASK_NOT_FOUND:
+                redirectAttributes.addFlashAttribute("error", "Задача не найдена");
+                break;
+        }
+        return "redirect:/tasks/" + id + "/solve";
+    }
+
     @GetMapping("/{id}/delete")
     public String deleteTask(@PathVariable Long id, RedirectAttributes redirectAttributes) {
         User currentUser = getCurrentUser();
@@ -105,7 +132,7 @@ public class TaskController {
         if (deleted) {
             redirectAttributes.addFlashAttribute("message", "Задача удалена");
         } else {
-            redirectAttributes.addFlashAttribute("error", "Не удалось удалить задачу (возможно, вы не автор)");
+            redirectAttributes.addFlashAttribute("error", "Не удалось удалить задачу (может, вы не автор?)");
         }
         return "redirect:/";
     }

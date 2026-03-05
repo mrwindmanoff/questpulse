@@ -2,6 +2,8 @@ package com.example.tasksolver.model;
 
 import jakarta.persistence.*;
 import java.time.LocalDateTime;
+import java.util.HashSet;
+import java.util.Set;
 
 @Entity
 public class Task {
@@ -24,10 +26,16 @@ public class Task {
 
     private LocalDateTime createdAt;
 
+    // Количество жалоб
+    private int reportCount = 0;
+
+    // Связь с отчётами (один ко многим)
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<Report> reports = new HashSet<>();
+
     @PrePersist
     protected void onCreate() {
         createdAt = LocalDateTime.now();
-        // автоматически устанавливаем награду по сложности
         this.rewardXp = difficulty.getReward();
     }
 
@@ -65,4 +73,10 @@ public class Task {
     public void setAuthor(User author) { this.author = author; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+
+    public int getReportCount() { return reportCount; }
+    public void setReportCount(int reportCount) { this.reportCount = reportCount; }
+
+    public Set<Report> getReports() { return reports; }
+    public void setReports(Set<Report> reports) { this.reports = reports; }
 }
