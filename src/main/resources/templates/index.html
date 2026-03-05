@@ -29,7 +29,9 @@
             <p><strong>Награда:</strong> <span th:text="${task.rewardXp}">10</span> XP</p>
             <div class="task-actions">
                 <a th:href="@{|/tasks/${task.id}/solve|}" class="btn">Решить</a>
-                <a th:if="${currentUser != null and task.author.id == currentUser.id}"
+
+                <!-- Кнопка удаления для автора или администратора -->
+                <a th:if="${currentUser != null and (task.author.id == currentUser.id or currentUser.admin)}"
                    th:href="@{|/tasks/${task.id}/delete|}"
                    class="btn btn-danger"
                    onclick="return confirm('Удалить задачу?')">Удалить</a>

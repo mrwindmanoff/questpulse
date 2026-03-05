@@ -31,6 +31,8 @@ public class User {
 
     private int totalXp = 0;
 
+    private boolean admin = false;  // новое поле
+
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> createdTasks = new ArrayList<>();
 
@@ -72,6 +74,9 @@ public class User {
 
     public int getTotalXp() { return totalXp; }
     public void setTotalXp(int totalXp) { this.totalXp = totalXp; }
+
+    public boolean isAdmin() { return admin; }
+    public void setAdmin(boolean admin) { this.admin = admin; }
 
     public List<Task> getCreatedTasks() { return createdTasks; }
     public List<SolvedTask> getSolvedTasks() { return solvedTasks; }

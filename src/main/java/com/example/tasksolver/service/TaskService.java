@@ -87,16 +87,13 @@ public class TaskService {
     public boolean deleteTask(Long taskId, User currentUser) {
         Task task = taskRepository.findById(taskId).orElse(null);
         if (task == null) return false;
-        
-        // Проверяем, что текущий пользователь - автор задачи
-        if (!task.getAuthor().getId().equals(currentUser.getId())) {
+
+        // Разрешено удалять, если текущий пользователь – автор или администратор
+        if (!(currentUser.isAdmin() || task.getAuthor().getId().equals(currentUser.getId()))) {
             return false;
         }
-        
-        // Сначала удаляем все связи SolvedTask (иначе ошибка внешнего ключа)
+
         solvedTaskRepository.deleteByTask(task);
-        
-        // Теперь удаляем саму задачу
         taskRepository.delete(task);
         return true;
     }
