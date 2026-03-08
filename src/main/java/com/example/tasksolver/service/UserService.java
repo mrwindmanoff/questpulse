@@ -80,4 +80,9 @@ public class UserService {
     public List<User> getBannedUsers() {
         return userRepository.findByBannedTrue();
     }
+
+    // Получить всех пользователей (для админки)
+    public List<User> findAll() {
+        return userRepository.findAll();
+    }
 }

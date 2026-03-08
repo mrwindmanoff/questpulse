@@ -31,7 +31,7 @@ public class AdminController {
             return "redirect:/?error=notAuthorized";
         }
 
-        model.addAttribute("users", userService.findAll()); // нужен метод в сервисе
+        model.addAttribute("users", userService.findAll());
         model.addAttribute("bannedUsers", userService.getBannedUsers());
         return "admin-users";
     }
