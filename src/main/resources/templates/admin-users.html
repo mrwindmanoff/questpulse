@@ -17,8 +17,17 @@
     <div th:if="${param.unbanned}" class="alert success">
         Пользователь <span th:text="${param.unbanned}">username</span> разбанен
     </div>
+    <div th:if="${param.madeAdmin}" class="alert success">
+        Пользователь <span th:text="${param.madeAdmin}">username</span> назначен администратором
+    </div>
+    <div th:if="${param.removedAdmin}" class="alert success">
+        Пользователь <span th:text="${param.removedAdmin}">username</span> лишён прав администратора
+    </div>
     <div th:if="${param.error}" class="alert error">
         Ошибка операции
+    </div>
+    <div th:if="${param.error == 'cannotRemoveSelf'}" class="alert error">
+        Нельзя снять права администратора с самого себя
     </div>
 
     <h2>Все пользователи</h2>
@@ -29,7 +38,6 @@
             <th>Логин</th>
             <th>Email</th>
             <th>XP</th>
-            <th>Админ</th>
             <th>Статус</th>
             <th>Действия</th>
         </tr>
@@ -40,28 +48,47 @@
             <td th:text="${user.username}">username</td>
             <td th:text="${user.email}">email</td>
             <td th:text="${user.totalXp}">0</td>
-            <td th:text="${user.admin} ? 'Да' : 'Нет'">Нет</td>
             <td>
                 <span th:if="${user.banned}" style="color: #ff4444;">ЗАБАНЕН</span>
-                <span th:if="${!user.banned and !user.emailVerified}" style="color: #ffaa00;">Ожидает подтверждения</span>
-                <span th:if="${!user.banned and user.emailVerified}" style="color: #0f0;">Активен</span>
+                <span th:if="${!user.banned and user.admin}" style="color: #f0f;">АДМИНИСТРАТОР</span>
+                <span th:if="${!user.banned and !user.admin and !user.emailVerified}" style="color: #ffaa00;">Ожидает подтверждения</span>
+                <span th:if="${!user.banned and !user.admin and user.emailVerified}" style="color: #0f0;">Активен</span>
             </td>
             <td>
+                <!-- Блок для не-админов (можно банить) -->
                 <div th:if="${!user.admin}">
-                    <form th:if="${!user.banned}" method="post" th:action="@{'/admin/ban/' + ${user.username}}" style="display: inline;">
-                        <input type="text" name="reason" placeholder="Причина бана" required>
-                        <button type="submit" class="btn btn-danger">Забанить</button>
+                    <!-- Кнопка бана (если не забанен) -->
+                    <form th:if="${!user.banned}" method="post" th:action="@{'/admin/ban/' + ${user.username}}" style="display: inline-block; margin-right: 5px;">
+                        <input type="text" name="reason" placeholder="Причина бана" required style="width: 150px; padding: 5px;">
+                        <button type="submit" class="btn btn-danger" style="padding: 5px 10px;">Забанить</button>
                     </form>
-                    <form th:if="${user.banned}" method="post" th:action="@{'/admin/unban/' + ${user.username}}" style="display: inline;">
-                        <button type="submit" class="btn btn-success">Разбанить</button>
+                    <!-- Кнопка разбана (если забанен) -->
+                    <form th:if="${user.banned}" method="post" th:action="@{'/admin/unban/' + ${user.username}}" style="display: inline-block; margin-right: 5px;">
+                        <button type="submit" class="btn btn-success" style="padding: 5px 10px;">Разбанить</button>
                     </form>
                 </div>
-                <span th:if="${user.admin}">Администратор</span>
+
+                <!-- Блок для админов (можно снять админку) -->
+                <div th:if="${user.admin}">
+                    <!-- Нельзя снять админку с самого себя -->
+                    <form th:unless="${user.username == currentUser.username}" method="post" th:action="@{'/admin/remove-admin/' + ${user.username}}" style="display: inline-block;">
+                        <button type="submit" class="btn btn-warning" style="padding: 5px 10px; background-color: #ffaa00; color: #000; border-color: #ffaa00;" onclick="return confirm('Снять права администратора?')">Снять админку</button>
+                    </form>
+                    <span th:if="${user.username == currentUser.username}" style="color: #f0f;">Это вы</span>
+                </div>
+
+                <!-- Кнопка назначения админом (только для не-админов) -->
+                <div th:if="${!user.admin and !user.banned}">
+                    <form method="post" th:action="@{'/admin/make-admin/' + ${user.username}}" style="display: inline-block; margin-top: 5px;">
+                        <button type="submit" class="btn btn-primary" style="padding: 5px 10px;" onclick="return confirm('Назначить администратором?')">Сделать админом</button>
+                    </form>
+                </div>
             </td>
         </tr>
         </tbody>
     </table>
 </div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

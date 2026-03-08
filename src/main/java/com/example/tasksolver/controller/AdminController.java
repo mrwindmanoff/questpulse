@@ -39,6 +39,7 @@ public class AdminController {
     @PostMapping("/ban/{username}")
     public String banUser(@PathVariable String username,
                           @RequestParam String reason,
+                          @RequestParam(required = false) String returnUrl,
                           Model model) {
         User admin = getCurrentUser();
         if (admin == null || !admin.isAdmin()) {
@@ -66,5 +67,42 @@ public class AdminController {
         } else {
             return "redirect:/admin/users?error=unbanFailed";
         }
+    }
+
+    @PostMapping("/make-admin/{username}")
+    public String makeAdmin(@PathVariable String username) {
+        User admin = getCurrentUser();
+        if (admin == null || !admin.isAdmin()) {
+            return "redirect:/?error=notAuthorized";
+        }
+
+        User user = userService.findByUsername(username);
+        if (user != null && !user.isAdmin()) {
+            user.setAdmin(true);
+            userService.save(user);
+            return "redirect:/admin/users?madeAdmin=" + username;
+        }
+        return "redirect:/admin/users?error=makeAdminFailed";
+    }
+
+    @PostMapping("/remove-admin/{username}")
+    public String removeAdmin(@PathVariable String username) {
+        User admin = getCurrentUser();
+        if (admin == null || !admin.isAdmin()) {
+            return "redirect:/?error=notAuthorized";
+        }
+
+        // Нельзя снять админку с самого себя
+        if (admin.getUsername().equals(username)) {
+            return "redirect:/admin/users?error=cannotRemoveSelf";
+        }
+
+        User user = userService.findByUsername(username);
+        if (user != null && user.isAdmin()) {
+            user.setAdmin(false);
+            userService.save(user);
+            return "redirect:/admin/users?removedAdmin=" + username;
+        }
+        return "redirect:/admin/users?error=removeAdminFailed";
     }
 }
