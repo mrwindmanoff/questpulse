@@ -35,10 +35,11 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authz -> authz
-                .requestMatchers("/", "/leaders", "/register", "/css/**").permitAll()
-                .requestMatchers("/tasks/create", "/tasks/*/solve").authenticated()
-                .anyRequest().permitAll()
-            )
+    		.requestMatchers("/", "/leaders", "/register", "/css/**", "/forgot-password", "/reset-password", "/reset-password-error", "/user/**").permitAll()
+    		.requestMatchers("/h2-console/**").permitAll()
+    		.requestMatchers("/tasks/create", "/tasks/*/solve", "/profile", "/admin/**").authenticated()
+    		.anyRequest().permitAll()
+	    )
             .formLogin(form -> form
                 .loginPage("/login")
                 .defaultSuccessUrl("/")

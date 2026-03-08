@@ -2,6 +2,7 @@ package com.example.tasksolver;
 
 import com.example.tasksolver.model.User;
 import com.example.tasksolver.repository.UserRepository;
+<<<<<<< HEAD
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
@@ -45,6 +46,43 @@ public class AdminInitializer implements CommandLineRunner {
                     user.setAdmin(true);
                     userRepository.save(user);
                     System.out.println("✅ Пользователь " + adminUsername + " назначен администратором.");
+=======
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.CommandLineRunner;
+import org.springframework.stereotype.Component;
+
+import java.util.Arrays;
+import java.util.List;
+
+@Component
+public class AdminInitializer implements CommandLineRunner {
+
+    private final UserRepository userRepository;
+
+    @Value("${app.admins}")
+    private String adminNames;
+
+    public AdminInitializer(UserRepository userRepository) {
+        this.userRepository = userRepository;
+    }
+
+    @Override
+    public void run(String... args) throws Exception {
+        if (adminNames == null || adminNames.isBlank()) {
+            return;
+        }
+
+        List<String> adminUsernameList = Arrays.stream(adminNames.split(","))
+                .map(String::trim)
+                .toList();
+
+        for (String username : adminUsernameList) {
+            userRepository.findByUsername(username).ifPresent(user -> {
+                if (!user.isAdmin()) {
+                    user.setAdmin(true);
+                    userRepository.save(user);
+                    System.out.println("Пользователь " + username + " назначен администратором.");
+>>>>>>> 6f15291b8250e93787fb26f60411efa1b1f12c85
                 }
             });
         }

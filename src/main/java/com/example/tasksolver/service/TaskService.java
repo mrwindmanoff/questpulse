@@ -2,6 +2,7 @@ package com.example.tasksolver.service;
 
 import com.example.tasksolver.dto.TaskForm;
 import com.example.tasksolver.model.*;
+import com.example.tasksolver.repository.ReportRepository;
 import com.example.tasksolver.repository.SolvedTaskRepository;
 import com.example.tasksolver.repository.TaskRepository;
 import com.example.tasksolver.repository.UserRepository;
@@ -22,6 +23,9 @@ public class TaskService {
 
     @Autowired
     private SolvedTaskRepository solvedTaskRepository;
+
+    @Autowired
+    private ReportRepository reportRepository;
 
     public List<Task> findAllTasks() {
         return taskRepository.findAllByOrderByCreatedAtDesc();
@@ -83,20 +87,67 @@ public class TaskService {
         return SolveResult.SUCCESS;
     }
 
+    // Метод для жалобы на задачу
+    @Transactional
+    public ReportResult reportTask(Long taskId, User reporter) {
+        Task task = taskRepository.findById(taskId).orElse(null);
+        if (task == null) {
+            return ReportResult.TASK_NOT_FOUND;
+        }
+
+        // Автор не может жаловаться на свою задачу
+        if (task.getAuthor().getId().equals(reporter.getId())) {
+            return ReportResult.CANNOT_REPORT_OWN_TASK;
+        }
+
+        // Проверяем, не жаловался ли уже
+        if (reportRepository.existsByUserAndTask(reporter, task)) {
+            return ReportResult.ALREADY_REPORTED;
+        }
+
+        // Создаём жалобу
+        Report report = new Report(reporter, task);
+        reportRepository.save(report);
+
+        // Увеличиваем счётчик репортов у задачи
+        task.setReportCount(task.getReportCount() + 1);
+        taskRepository.save(task);
+
+        // Начисляем +1 XP жалующемуся
+        reporter.setTotalXp(reporter.getTotalXp() + 1);
+        userRepository.save(reporter);
+
+        return ReportResult.SUCCESS;
+    }
+
+    // Удаление задачи (для автора или админа) с штрафом XP для автора
     @Transactional
     public boolean deleteTask(Long taskId, User currentUser) {
         Task task = taskRepository.findById(taskId).orElse(null);
         if (task == null) return false;
-        
-        // Проверяем, что текущий пользователь - автор задачи
-        if (!task.getAuthor().getId().equals(currentUser.getId())) {
+
+        // Разрешено удалять, если текущий пользователь – автор или администратор
+        boolean isAuthor = task.getAuthor().getId().equals(currentUser.getId());
+        if (!(currentUser.isAdmin() || isAuthor)) {
             return false;
         }
-        
-        // Сначала удаляем все связи SolvedTask (иначе ошибка внешнего ключа)
+
+        // Если удаляет администратор (не автор), накладываем штраф на автора:
+        // снимаем XP, равное количеству репортов
+        if (!isAuthor && currentUser.isAdmin()) {
+            User author = task.getAuthor();
+            int penalty = task.getReportCount();
+            if (penalty > 0) {
+                // Не уходим в минус
+                author.setTotalXp(Math.max(0, author.getTotalXp() - penalty));
+                userRepository.save(author);
+            }
+        }
+
+        // Удаляем все связанные solved и reports
         solvedTaskRepository.deleteByTask(task);
-        
-        // Теперь удаляем саму задачу
+        reportRepository.deleteByTask(task); // нужно добавить этот метод в ReportRepository
+
         taskRepository.delete(task);
         return true;
     }
@@ -107,5 +158,12 @@ public class TaskService {
         ALREADY_SOLVED,
         WRONG_ANSWER,
         CANNOT_SOLVE_OWN_TASK
+    }
+
+    public enum ReportResult {
+        SUCCESS,
+        TASK_NOT_FOUND,
+        ALREADY_REPORTED,
+        CANNOT_REPORT_OWN_TASK
     }
 }

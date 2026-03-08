@@ -10,7 +10,7 @@
 
 <div class="container">
     <h1 th:text="${task.title}">Задача</h1>
-    <p><strong>Автор:</strong> <span th:text="${task.author.username}">Автор</span></p>
+    <p><strong>Автор:</strong> <a th:href="@{'/user/' + ${task.author.username}}" th:text="${task.author.username}">Автор</a></p>
     <p><strong>Сложность:</strong> <span th:text="${task.difficulty}">EASY</span></p>
     <p><strong>Награда:</strong> <span th:text="${task.rewardXp}">10</span> XP</p>
 
@@ -29,6 +29,13 @@
         </div>
         <button type="submit">Отправить</button>
     </form>
+
+    <!-- Кнопка жалобы (только для авторизованных, не для автора) -->
+    <div sec:authorize="isAuthenticated()" th:if="${#authentication.name != task.author.username}">
+        <form method="post" th:action="@{|/tasks/${task.id}/report|}">
+            <button type="submit" class="btn btn-danger" style="margin-top: 1rem;">Пожаловаться на задачу</button>
+        </form>
+    </div>
 
     <p><a href="/">← К списку задач</a></p>
 </div>
