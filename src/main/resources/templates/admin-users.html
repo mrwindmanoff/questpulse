@@ -10,6 +10,11 @@
 
 <div class="container">
     <h1>Управление пользователями</h1>
+    
+    <!-- Кнопка возврата на главную (для удобства) -->
+    <div style="margin-bottom: 20px;">
+        <a href="/" class="btn">← На главную</a>
+    </div>
 
     <div th:if="${param.banned}" class="alert success">
         Пользователь <span th:text="${param.banned}">username</span> забанен

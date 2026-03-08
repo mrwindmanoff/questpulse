@@ -16,10 +16,21 @@
         <p><strong>Email:</strong> <span th:text="${user.email}">email</span></p>
         <p><strong>Опыт (XP):</strong> <span th:text="${user.totalXp}">0</span></p>
         <p><strong>Звание:</strong> <span th:text="${user.rank}">Новичок</span></p>
+        <p th:if="${user.admin}"><strong>Статус:</strong> <span style="color: #f0f;">Администратор</span></p>
+        <p th:if="${user.banned}"><strong>Статус:</strong> <span style="color: #ff4444;">ЗАБАНЕН</span></p>
+        <p th:if="${user.banned and user.banReason != null}"><strong>Причина бана:</strong> <span th:text="${user.banReason}"></span></p>
     </div>
 
-    <p><a href="/">← На главную</a></p>
+    <!-- Кнопка для админов: переход в админ-панель -->
+    <div th:if="${user.admin}" style="margin-top: 2rem; text-align: center;">
+        <a href="/admin/users" class="btn btn-danger" style="padding: 1rem 2rem; font-size: 1.2rem; border-width: 3px;">
+            ⚡ Управление пользователями (админка)
+        </a>
+    </div>
+
+    <p style="margin-top: 2rem;"><a href="/">← На главную</a></p>
 </div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>
