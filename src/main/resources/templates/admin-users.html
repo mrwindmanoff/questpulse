@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Управление пользователями</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1>Управление пользователями</h1>
+
+    <div th:if="${param.banned}" class="alert success">
+        Пользователь <span th:text="${param.banned}">username</span> забанен
+    </div>
+    <div th:if="${param.unbanned}" class="alert success">
+        Пользователь <span th:text="${param.unbanned}">username</span> разбанен
+    </div>
+    <div th:if="${param.error}" class="alert error">
+        Ошибка операции
+    </div>
+
+    <h2>Все пользователи</h2>
+    <table>
+        <thead>
+        <tr>
+            <th>ID</th>
+            <th>Логин</th>
+            <th>Email</th>
+            <th>XP</th>
+            <th>Админ</th>
+            <th>Статус</th>
+            <th>Действия</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="user : ${users}">
+            <td th:text="${user.id}">1</td>
+            <td th:text="${user.username}">username</td>
+            <td th:text="${user.email}">email</td>
+            <td th:text="${user.totalXp}">0</td>
+            <td th:text="${user.admin} ? 'Да' : 'Нет'">Нет</td>
+            <td>
+                <span th:if="${user.banned}" style="color: #ff4444;">ЗАБАНЕН</span>
+                <span th:if="${!user.banned and !user.emailVerified}" style="color: #ffaa00;">Ожидает подтверждения</span>
+                <span th:if="${!user.banned and user.emailVerified}" style="color: #0f0;">Активен</span>
+            </td>
+            <td>
+                <div th:if="${!user.admin}">
+                    <form th:if="${!user.banned}" method="post" th:action="@{'/admin/ban/' + ${user.username}}" style="display: inline;">
+                        <input type="text" name="reason" placeholder="Причина бана" required>
+                        <button type="submit" class="btn btn-danger">Забанить</button>
+                    </form>
+                    <form th:if="${user.banned}" method="post" th:action="@{'/admin/unban/' + ${user.username}}" style="display: inline;">
+                        <button type="submit" class="btn btn-success">Разбанить</button>
+                    </form>
+                </div>
+                <span th:if="${user.admin}">Администратор</span>
+            </td>
+        </tr>
+        </tbody>
+    </table>
+</div>
+</body>
+</html>

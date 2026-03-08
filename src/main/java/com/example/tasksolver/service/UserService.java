@@ -6,6 +6,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
+
 @Service
 public class UserService {
 
@@ -20,6 +23,7 @@ public class UserService {
             return false;
         }
         User user = new User(username, passwordEncoder.encode(password), email);
+        user.setEmailVerified(false);
         userRepository.save(user);
         return true;
     }
@@ -36,7 +40,44 @@ public class UserService {
         return userRepository.findByResetPasswordToken(token).orElse(null);
     }
 
+    public User findByVerificationCode(String code) {
+        return userRepository.findByVerificationCode(code).orElse(null);
+    }
+
     public void save(User user) {
         userRepository.save(user);
+    }
+
+    // Бан пользователя (только админ)
+    public boolean banUser(String username, String reason, User admin) {
+        if (!admin.isAdmin()) return false;
+
+        User user = findByUsername(username);
+        if (user == null || user.isAdmin()) return false; // нельзя забанить админа
+
+        user.setBanned(true);
+        user.setBanReason(reason);
+        user.setBannedAt(LocalDateTime.now());
+        userRepository.save(user);
+        return true;
+    }
+
+    // Разбан пользователя
+    public boolean unbanUser(String username, User admin) {
+        if (!admin.isAdmin()) return false;
+
+        User user = findByUsername(username);
+        if (user == null) return false;
+
+        user.setBanned(false);
+        user.setBanReason(null);
+        user.setBannedAt(null);
+        userRepository.save(user);
+        return true;
+    }
+
+    // Получить всех забаненных
+    public List<User> getBannedUsers() {
+        return userRepository.findByBannedTrue();
     }
 }

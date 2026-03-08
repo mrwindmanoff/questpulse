@@ -6,9 +6,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Controller;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.*;
 
 @Controller
 @RequestMapping("/admin")
@@ -25,19 +24,47 @@ public class AdminController {
         return userService.findByUsername(auth.getName());
     }
 
-    @GetMapping("/make/{username}")
-    public String makeAdmin(@PathVariable String username) {
+    @GetMapping("/users")
+    public String usersList(Model model) {
         User currentUser = getCurrentUser();
-        // Только существующий администратор может назначать других
         if (currentUser == null || !currentUser.isAdmin()) {
             return "redirect:/?error=notAuthorized";
         }
 
-        User user = userService.findByUsername(username);
-        if (user != null) {
-            user.setAdmin(true);
-            userService.save(user);
+        model.addAttribute("users", userService.findAll()); // нужен метод в сервисе
+        model.addAttribute("bannedUsers", userService.getBannedUsers());
+        return "admin-users";
+    }
+
+    @PostMapping("/ban/{username}")
+    public String banUser(@PathVariable String username,
+                          @RequestParam String reason,
+                          Model model) {
+        User admin = getCurrentUser();
+        if (admin == null || !admin.isAdmin()) {
+            return "redirect:/?error=notAuthorized";
         }
-        return "redirect:/?message=adminAssigned";
+
+        boolean banned = userService.banUser(username, reason, admin);
+        if (banned) {
+            return "redirect:/admin/users?banned=" + username;
+        } else {
+            return "redirect:/admin/users?error=banFailed";
+        }
+    }
+
+    @PostMapping("/unban/{username}")
+    public String unbanUser(@PathVariable String username) {
+        User admin = getCurrentUser();
+        if (admin == null || !admin.isAdmin()) {
+            return "redirect:/?error=notAuthorized";
+        }
+
+        boolean unbanned = userService.unbanUser(username, admin);
+        if (unbanned) {
+            return "redirect:/admin/users?unbanned=" + username;
+        } else {
+            return "redirect:/admin/users?error=unbanFailed";
+        }
     }
 }

@@ -53,41 +53,33 @@ public class TaskService {
             return SolveResult.TASK_NOT_FOUND;
         }
 
-        // Запрещаем автору решать свою задачу
         if (task.getAuthor().getId().equals(solver.getId())) {
             return SolveResult.CANNOT_SOLVE_OWN_TASK;
         }
 
-        // Проверяем, решал ли уже эту задачу
         if (solvedTaskRepository.existsByUserAndTask(solver, task)) {
             return SolveResult.ALREADY_SOLVED;
         }
 
-        // Сравниваем ответ (без учета регистра, обрезаем пробелы)
         if (!task.getCorrectAnswer().trim().equalsIgnoreCase(answer.trim())) {
             return SolveResult.WRONG_ANSWER;
         }
 
-        // Всё верно – начисляем XP
         int reward = task.getRewardXp();
 
-        // Решателю
         solver.setTotalXp(solver.getTotalXp() + reward);
         userRepository.save(solver);
 
-        // Автору
         User author = task.getAuthor();
         author.setTotalXp(author.getTotalXp() + reward);
         userRepository.save(author);
 
-        // Запись о решении
         SolvedTask solved = new SolvedTask(solver, task);
         solvedTaskRepository.save(solved);
 
         return SolveResult.SUCCESS;
     }
 
-    // Метод для жалобы на задачу
     @Transactional
     public ReportResult reportTask(Long taskId, User reporter) {
         Task task = taskRepository.findById(taskId).orElse(null);
@@ -95,17 +87,15 @@ public class TaskService {
             return ReportResult.TASK_NOT_FOUND;
         }
 
-        // Автор не может жаловаться на свою задачу
         if (task.getAuthor().getId().equals(reporter.getId())) {
             return ReportResult.CANNOT_REPORT_OWN_TASK;
         }
 
-        // Проверяем, не жаловался ли уже
         if (reportRepository.existsByUserAndTask(reporter, task)) {
             return ReportResult.ALREADY_REPORTED;
         }
 
-        // Создаём жалобу
+        // Создаём жалобу (XP пока не начисляем)
         Report report = new Report(reporter, task);
         reportRepository.save(report);
 
@@ -113,41 +103,39 @@ public class TaskService {
         task.setReportCount(task.getReportCount() + 1);
         taskRepository.save(task);
 
-        // Начисляем +1 XP жалующемуся
-        reporter.setTotalXp(reporter.getTotalXp() + 1);
-        userRepository.save(reporter);
-
         return ReportResult.SUCCESS;
     }
 
-    // Удаление задачи (для автора или админа) с штрафом XP для автора
     @Transactional
     public boolean deleteTask(Long taskId, User currentUser) {
         Task task = taskRepository.findById(taskId).orElse(null);
         if (task == null) return false;
 
-        // Разрешено удалять, если текущий пользователь – автор или администратор
         boolean isAuthor = task.getAuthor().getId().equals(currentUser.getId());
         if (!(currentUser.isAdmin() || isAuthor)) {
             return false;
         }
 
-        // Если удаляет администратор (не автор), накладываем штраф на автора:
-        // снимаем XP, равное количеству репортов
+        // Если удаляет администратор (не автор), накладываем штраф на автора
         if (!isAuthor && currentUser.isAdmin()) {
             User author = task.getAuthor();
             int penalty = task.getReportCount();
             if (penalty > 0) {
-                // Не уходим в минус
                 author.setTotalXp(Math.max(0, author.getTotalXp() - penalty));
                 userRepository.save(author);
             }
+
+            // Начисляем XP всем, кто жаловался (только при удалении админом)
+            for (Report report : task.getReports()) {
+                User reporter = report.getUser();
+                reporter.setTotalXp(reporter.getTotalXp() + 1);
+                userRepository.save(reporter);
+            }
         }
 
-        // Удаляем все связанные solved и reports
+        // Удаляем все связанные записи
         solvedTaskRepository.deleteByTask(task);
-        reportRepository.deleteByTask(task); // нужно добавить этот метод в ReportRepository
-
+        reportRepository.deleteByTask(task);
         taskRepository.delete(task);
         return true;
     }

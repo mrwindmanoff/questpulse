@@ -22,22 +22,28 @@ public class User {
     private String email;
 
     private boolean emailVerified = false;
-
-    private String verificationToken;
+    private String verificationCode;
+    private LocalDateTime verificationCodeExpiry;
 
     private String resetPasswordToken;
-
     private LocalDateTime resetPasswordTokenExpiry;
 
     private int totalXp = 0;
+    private boolean admin = false;
 
-    private boolean admin = false;  // новое поле
+    // Поля для бана
+    private boolean banned = false;
+    private String banReason;
+    private LocalDateTime bannedAt;
 
     @OneToMany(mappedBy = "author", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Task> createdTasks = new ArrayList<>();
 
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SolvedTask> solvedTasks = new ArrayList<>();
+
+    @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Report> reports = new ArrayList<>();
 
     public User() {}
 
@@ -63,8 +69,11 @@ public class User {
     public boolean isEmailVerified() { return emailVerified; }
     public void setEmailVerified(boolean emailVerified) { this.emailVerified = emailVerified; }
 
-    public String getVerificationToken() { return verificationToken; }
-    public void setVerificationToken(String verificationToken) { this.verificationToken = verificationToken; }
+    public String getVerificationCode() { return verificationCode; }
+    public void setVerificationCode(String verificationCode) { this.verificationCode = verificationCode; }
+
+    public LocalDateTime getVerificationCodeExpiry() { return verificationCodeExpiry; }
+    public void setVerificationCodeExpiry(LocalDateTime verificationCodeExpiry) { this.verificationCodeExpiry = verificationCodeExpiry; }
 
     public String getResetPasswordToken() { return resetPasswordToken; }
     public void setResetPasswordToken(String resetPasswordToken) { this.resetPasswordToken = resetPasswordToken; }
@@ -78,10 +87,21 @@ public class User {
     public boolean isAdmin() { return admin; }
     public void setAdmin(boolean admin) { this.admin = admin; }
 
+    public boolean isBanned() { return banned; }
+    public void setBanned(boolean banned) { this.banned = banned; }
+
+    public String getBanReason() { return banReason; }
+    public void setBanReason(String banReason) { this.banReason = banReason; }
+
+    public LocalDateTime getBannedAt() { return bannedAt; }
+    public void setBannedAt(LocalDateTime bannedAt) { this.bannedAt = bannedAt; }
+
     public List<Task> getCreatedTasks() { return createdTasks; }
     public List<SolvedTask> getSolvedTasks() { return solvedTasks; }
+    public List<Report> getReports() { return reports; }
 
     public String getRank() {
+        if (banned) return "ЗАБАНЕН";
         if (totalXp < 100) return "Новичок";
         else if (totalXp < 500) return "Ученик";
         else if (totalXp < 1000) return "Эксперт";

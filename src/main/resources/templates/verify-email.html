@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Подтверждение email</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1>Подтверждение email</h1>
+
+    <div th:if="${error}" class="alert error" th:text="${error}"></div>
+
+    <form method="post" th:action="@{/verify-email}">
+        <input type="hidden" name="username" th:value="${username}">
+        <div>
+            <label>Введите код из письма:</label>
+            <input type="text" name="code" maxlength="6" pattern="[A-Z0-9]{6}" required>
+        </div>
+        <button type="submit">Подтвердить</button>
+    </form>
+
+    <p style="margin-top: 2rem;">Не пришло письмо? <a href="/resend-code?username=${username}">Отправить ещё раз</a></p>
+    <p><a href="/register">← Вернуться к регистрации</a></p>
+</div>
+</body>
+</html>
