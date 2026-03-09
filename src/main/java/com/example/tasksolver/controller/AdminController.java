@@ -33,14 +33,13 @@ public class AdminController {
 
         model.addAttribute("users", userService.findAll());
         model.addAttribute("bannedUsers", userService.getBannedUsers());
+        model.addAttribute("currentUser", currentUser);
         return "admin-users";
     }
 
     @PostMapping("/ban/{username}")
     public String banUser(@PathVariable String username,
-                          @RequestParam String reason,
-                          @RequestParam(required = false) String returnUrl,
-                          Model model) {
+                          @RequestParam String reason) {
         User admin = getCurrentUser();
         if (admin == null || !admin.isAdmin()) {
             return "redirect:/?error=notAuthorized";
@@ -92,7 +91,6 @@ public class AdminController {
             return "redirect:/?error=notAuthorized";
         }
 
-        // Нельзя снять админку с самого себя
         if (admin.getUsername().equals(username)) {
             return "redirect:/admin/users?error=cannotRemoveSelf";
         }

@@ -7,7 +7,6 @@ import org.springframework.context.annotation.Configuration;
 import org.springframework.security.authentication.dao.DaoAuthenticationProvider;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
-import org.springframework.security.core.userdetails.UserDetailsService;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -37,49 +36,35 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authorizeHttpRequests(authz -> authz
-                // Публичные страницы (доступны всем без авторизации)
+                // Публичные страницы
                 .requestMatchers(
-                    "/", 
-                    "/leaders", 
-                    "/register", 
-                    "/login", 
-                    "/css/**", 
-                    "/forgot-password", 
-                    "/forgot-password/**",
-                    "/reset-password", 
-                    "/reset-password/**",
-                    "/reset-password-error",
-                    "/user/**"
+                    "/", "/leaders", "/register", "/login", "/css/**",
+                    "/forgot-password", "/forgot-password/**",
+                    "/reset-password", "/reset-password/**",
+                    "/reset-password-error", "/user/**"
                 ).permitAll()
                 
-                // Страницы подтверждения email (доступны без авторизации)
+                // Подтверждение email
                 .requestMatchers(
-                    "/verify-email",
-                    "/verify-email/**",
-                    "/resend-code",
-                    "/resend-code/**"
+                    "/verify-email", "/verify-email/**",
+                    "/resend-code", "/resend-code/**"
                 ).permitAll()
                 
-                // H2 консоль (только для разработки)
+                // H2 консоль
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
                 
-                // Страницы, требующие авторизации
+                // Страницы для авторизованных
                 .requestMatchers(
-                    "/profile",
-                    "/profile/**",
-                    "/tasks/create",
-                    "/tasks/*/solve",
-                    "/tasks/*/report",
-                    "/tasks/*/delete"
+                    "/profile", "/profile/**",
+                    "/tasks/create", "/tasks/*/solve",
+                    "/tasks/*/report", "/tasks/*/delete"
                 ).authenticated()
                 
-                // Админка (только для администраторов)
-                .requestMatchers(
-                    "/admin/**"
-                ).hasAuthority("ROLE_ADMIN")  // используем hasAuthority, так как у нас нет ролей, а есть флаг admin
+                // Админка
+                .requestMatchers("/admin/**").hasRole("ADMIN")
                 
-                // Всё остальное разрешено
-                .anyRequest().permitAll()
+                // Всё остальное требует авторизации
+                .anyRequest().authenticated()
             )
             .formLogin(form -> form
                 .loginPage("/login")
@@ -90,9 +75,7 @@ public class SecurityConfig {
                 .logoutSuccessUrl("/")
                 .permitAll()
             )
-            // Отключаем CSRF для H2 консоли
             .csrf(csrf -> csrf.ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")))
-            // Разрешаем фреймы для H2 консоли
             .headers(headers -> headers.frameOptions().disable());
 
         return http.build();

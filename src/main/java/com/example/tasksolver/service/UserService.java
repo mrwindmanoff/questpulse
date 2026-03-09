@@ -48,12 +48,11 @@ public class UserService {
         userRepository.save(user);
     }
 
-    // Бан пользователя (только админ)
     public boolean banUser(String username, String reason, User admin) {
         if (!admin.isAdmin()) return false;
 
         User user = findByUsername(username);
-        if (user == null || user.isAdmin()) return false; // нельзя забанить админа
+        if (user == null || user.isAdmin()) return false;
 
         user.setBanned(true);
         user.setBanReason(reason);
@@ -62,7 +61,6 @@ public class UserService {
         return true;
     }
 
-    // Разбан пользователя
     public boolean unbanUser(String username, User admin) {
         if (!admin.isAdmin()) return false;
 
@@ -76,12 +74,10 @@ public class UserService {
         return true;
     }
 
-    // Получить всех забаненных
     public List<User> getBannedUsers() {
         return userRepository.findByBannedTrue();
     }
 
-    // Получить всех пользователей (для админки)
     public List<User> findAll() {
         return userRepository.findAll();
     }

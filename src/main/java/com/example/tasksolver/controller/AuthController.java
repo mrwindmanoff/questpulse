@@ -69,16 +69,13 @@ public class AuthController {
             return "register";
         }
 
-        // Генерируем код подтверждения
         User user = userService.findByUsername(username);
         String code = generateVerificationCode();
         user.setVerificationCode(code);
         user.setVerificationCodeExpiry(LocalDateTime.now().plusHours(24));
         userService.save(user);
 
-        // Отправляем код на почту
-        String message = "Ваш код подтверждения для QuestPulse: " + code + "\n"
-                + "Код действителен 24 часа.";
+        String message = "Ваш код подтверждения для QuestPulse: " + code + "\nКод действителен 24 часа.";
         emailService.sendSimpleEmail(user.getEmail(), "Подтверждение email на QuestPulse", message);
 
         return "redirect:/verify-email?username=" + username;
@@ -124,5 +121,66 @@ public class AuthController {
         return "redirect:/login?verified";
     }
 
-    // ... остальные методы (forgot-password, reset-password и т.д.)
+    @GetMapping("/forgot-password")
+    public String forgotPasswordForm() {
+        return "forgot-password";
+    }
+
+    @PostMapping("/forgot-password")
+    public String forgotPassword(@RequestParam String email, Model model) {
+        User user = userService.findByEmail(email);
+        if (user == null) {
+            model.addAttribute("error", "Пользователь с таким email не найден");
+            return "forgot-password";
+        }
+
+        String token = java.util.UUID.randomUUID().toString();
+        user.setResetPasswordToken(token);
+        user.setResetPasswordTokenExpiry(LocalDateTime.now().plusHours(1));
+        userService.save(user);
+
+        String resetLink = baseUrl + "/reset-password?token=" + token;
+        String message = "Для сброса пароля перейдите по ссылке: " + resetLink;
+
+        emailService.sendSimpleEmail(user.getEmail(), "Восстановление пароля на QuestPulse", message);
+
+        model.addAttribute("success", "Инструкция по сбросу пароля отправлена на ваш email");
+        return "forgot-password";
+    }
+
+    @GetMapping("/reset-password")
+    public String resetPasswordForm(@RequestParam String token, Model model) {
+        User user = userService.findByResetPasswordToken(token);
+        if (user == null || user.getResetPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
+            model.addAttribute("error", "Ссылка недействительна или истекла");
+            return "reset-password-error";
+        }
+        model.addAttribute("token", token);
+        return "reset-password";
+    }
+
+    @PostMapping("/reset-password")
+    public String resetPassword(@RequestParam String token,
+                                @RequestParam String password,
+                                @RequestParam String confirmPassword,
+                                Model model) {
+        if (!password.equals(confirmPassword)) {
+            model.addAttribute("error", "Пароли не совпадают");
+            model.addAttribute("token", token);
+            return "reset-password";
+        }
+
+        User user = userService.findByResetPasswordToken(token);
+        if (user == null || user.getResetPasswordTokenExpiry().isBefore(LocalDateTime.now())) {
+            model.addAttribute("error", "Ссылка недействительна или истекла");
+            return "reset-password-error";
+        }
+
+        user.setPassword(passwordEncoder.encode(password));
+        user.setResetPasswordToken(null);
+        user.setResetPasswordTokenExpiry(null);
+        userService.save(user);
+
+        return "redirect:/login?resetSuccess";
+    }
 }
