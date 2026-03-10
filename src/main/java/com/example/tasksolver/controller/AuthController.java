@@ -47,6 +47,11 @@ public class AuthController {
         return "login";
     }
 
+    @GetMapping("/logout-success")
+    public String logoutSuccess() {
+        return "logout";
+    }
+
     @GetMapping("/register")
     public String registerForm() {
         return "register";

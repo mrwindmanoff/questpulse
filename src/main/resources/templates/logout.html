@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <title>Выход из аккаунта</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container" style="text-align: center; min-height: 60vh; display: flex; flex-direction: column; justify-content: center;">
+    <h1 style="font-size: 3rem; margin-bottom: 1rem;">👋</h1>
+    <h1>Вы успешно вышли из аккаунта</h1>
+    
+    <div style="margin: 3rem 0;">
+        <p style="font-size: 1.2rem; color: #c0f0f0;">Спасибо, что были с нами! Возвращайтесь скорее.</p>
+    </div>
+    
+    <div style="display: flex; gap: 1rem; justify-content: center;">
+        <a href="/" class="btn btn-primary" style="padding: 1rem 2rem;">На главную</a>
+        <a href="/login" class="btn" style="padding: 1rem 2rem;">Войти снова</a>
+    </div>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
