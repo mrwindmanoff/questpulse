@@ -70,15 +70,12 @@ public class AuthController {
         
         String clientIp = loginAttemptService.getClientIP();
         
-        // Проверка на блокировку IP (слишком много неудачных попыток)
         if (loginAttemptService.isIpBlocked(clientIp)) {
             model.addAttribute("error", "Слишком много попыток регистрации с вашего IP. Попробуйте через 24 часа.");
             return "register";
         }
         
-        // Проверка на количество аккаунтов с этого IP
         if (!loginAttemptService.canRegisterFromIp(clientIp)) {
-            int registeredCount = loginAttemptService.getRegisteredAccountsFromIp(clientIp);
             model.addAttribute("error", "С вашего IP уже зарегистрирован аккаунт. Максимум 1 аккаунт с одного IP.");
             return "register";
         }
@@ -96,23 +93,20 @@ public class AuthController {
             return "register";
         }
 
-        // Успешная регистрация — запоминаем IP
         loginAttemptService.registrationSucceeded(clientIp);
 
-        // Генерируем код подтверждения (опционально, можно отключить)
         User user = userService.findByUsername(username);
         String code = generateVerificationCode();
         user.setVerificationCode(code);
         user.setVerificationCodeExpiry(LocalDateTime.now().plusHours(24));
         userService.save(user);
 
-        // Пытаемся отправить письмо, но не критично если не получится
-        String message = "Ваш код подтверждения для QuestPulse: " + code + "\nКод действителен 24 часа.";
+        // Попытка отправить письмо (не критично, если не получится)
         try {
+            String message = "Ваш код подтверждения для QuestPulse: " + code + "\nКод действителен 24 часа.";
             emailService.sendSimpleEmail(user.getEmail(), "Подтверждение email на QuestPulse", message);
         } catch (Exception e) {
             System.err.println("Email sending failed: " + e.getMessage());
-            // Не блокируем регистрацию из-за ошибки почты
         }
 
         return "redirect:/verify-email?username=" + username;
@@ -158,6 +152,8 @@ public class AuthController {
         return "redirect:/login?verified";
     }
 
+    // ========== ВОССТАНОВЛЕНИЕ ПАРОЛЯ (РАБОТАЕТ БЕЗ ПОЧТЫ) ==========
+
     @GetMapping("/forgot-password")
     public String forgotPasswordForm() {
         return "forgot-password";
@@ -171,23 +167,19 @@ public class AuthController {
             return "forgot-password";
         }
 
+        // Генерируем токен
         String token = java.util.UUID.randomUUID().toString();
         user.setResetPasswordToken(token);
         user.setResetPasswordTokenExpiry(LocalDateTime.now().plusHours(1));
         userService.save(user);
 
+        // Формируем ссылку для сброса
         String resetLink = baseUrl + "/reset-password?token=" + token;
-        String message = "Для сброса пароля перейдите по ссылке: " + resetLink;
 
-        try {
-            emailService.sendSimpleEmail(user.getEmail(), "Восстановление пароля на QuestPulse", message);
-        } catch (Exception e) {
-            System.err.println("Email sending failed: " + e.getMessage());
-            model.addAttribute("error", "Не удалось отправить письмо. Попробуйте позже.");
-            return "forgot-password";
-        }
+        // Вместо отправки email показываем ссылку прямо на странице
+        model.addAttribute("success", "Ссылка для сброса пароля сгенерирована. Нажмите на неё или скопируйте в браузер:");
+        model.addAttribute("resetLink", resetLink);
 
-        model.addAttribute("success", "Инструкция по сбросу пароля отправлена на ваш email");
         return "forgot-password";
     }
 
