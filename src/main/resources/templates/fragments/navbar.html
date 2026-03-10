@@ -13,11 +13,15 @@
             <a sec:authorize="isAuthenticated()" th:if="${currentUser != null and currentUser.admin}" href="/admin/users" style="color: #ff4444; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Админка</a>
         </div>
         <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
-            <div sec:authorize="isAuthenticated()" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+            <div sec:authorize="isAuthenticated()" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
                 <span>Привет, <a th:href="@{'/user/' + ${#authentication.name}}" style="color: #f0f; text-decoration: underline;">[[${#authentication.name}]]</a></span>
                 <span>(Звание: <span th:text="${currentUser != null ? currentUser.rank : 'Новичок'}">Новичок</span>)</span>
                 <a href="/profile" style="color: #f0f;">Профиль</a>
-                <a th:href="@{/logout}" style="color: #f0f;">Выйти</a>
+                <!-- ФОРМА ВЫХОДА С POST ЗАПРОСОМ -->
+                <form th:action="@{/logout}" method="post" style="display: inline;">
+                    <input type="submit" value="Выйти" 
+                           style="background: none; border: none; color: #f0f; cursor: pointer; font-family: 'Courier New', monospace; font-size: 1rem; padding: 0; text-decoration: underline;">
+                </form>
             </div>
             <div sec:authorize="!isAuthenticated()" style="display: flex; gap: 0.5rem;">
                 <a href="/login" style="color: #f0f;">[Вход]</a>

@@ -49,7 +49,7 @@ public class SecurityConfig {
                     "/reset-password/**",
                     "/reset-password-error",
                     "/user/**",
-                    "/logout-success"  // ← добавили страницу выхода
+                    "/logout-success"
                 ).permitAll()
                 
                 // Подтверждение email
@@ -85,7 +85,10 @@ public class SecurityConfig {
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/logout-success")  // ← теперь сюда
+                .logoutUrl("/logout")
+                .logoutSuccessUrl("/logout-success")
+                .deleteCookies("JSESSIONID")
+                .invalidateHttpSession(true)
                 .permitAll()
             )
             .csrf(csrf -> csrf.ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")))
