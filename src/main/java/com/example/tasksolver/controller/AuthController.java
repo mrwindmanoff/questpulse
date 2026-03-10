@@ -2,6 +2,7 @@ package com.example.tasksolver.controller;
 
 import com.example.tasksolver.model.User;
 import com.example.tasksolver.service.EmailService;
+import com.example.tasksolver.service.LoginAttemptService;
 import com.example.tasksolver.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -26,6 +27,9 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
+
+    @Autowired
+    private LoginAttemptService loginAttemptService;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -63,25 +67,53 @@ public class AuthController {
                            @RequestParam String password,
                            @RequestParam String confirmPassword,
                            Model model) {
+        
+        String clientIp = loginAttemptService.getClientIP();
+        
+        // Проверка на блокировку IP (слишком много неудачных попыток)
+        if (loginAttemptService.isIpBlocked(clientIp)) {
+            model.addAttribute("error", "Слишком много попыток регистрации с вашего IP. Попробуйте через 24 часа.");
+            return "register";
+        }
+        
+        // Проверка на количество аккаунтов с этого IP
+        if (!loginAttemptService.canRegisterFromIp(clientIp)) {
+            int registeredCount = loginAttemptService.getRegisteredAccountsFromIp(clientIp);
+            model.addAttribute("error", "С вашего IP уже зарегистрирован аккаунт. Максимум 1 аккаунт с одного IP.");
+            return "register";
+        }
+        
         if (!password.equals(confirmPassword)) {
+            loginAttemptService.registrationFailed(clientIp);
             model.addAttribute("error", "Пароли не совпадают");
             return "register";
         }
 
         boolean registered = userService.registerUser(username, password, email);
         if (!registered) {
+            loginAttemptService.registrationFailed(clientIp);
             model.addAttribute("error", "Имя пользователя или email уже заняты");
             return "register";
         }
 
+        // Успешная регистрация — запоминаем IP
+        loginAttemptService.registrationSucceeded(clientIp);
+
+        // Генерируем код подтверждения (опционально, можно отключить)
         User user = userService.findByUsername(username);
         String code = generateVerificationCode();
         user.setVerificationCode(code);
         user.setVerificationCodeExpiry(LocalDateTime.now().plusHours(24));
         userService.save(user);
 
+        // Пытаемся отправить письмо, но не критично если не получится
         String message = "Ваш код подтверждения для QuestPulse: " + code + "\nКод действителен 24 часа.";
-        emailService.sendSimpleEmail(user.getEmail(), "Подтверждение email на QuestPulse", message);
+        try {
+            emailService.sendSimpleEmail(user.getEmail(), "Подтверждение email на QuestPulse", message);
+        } catch (Exception e) {
+            System.err.println("Email sending failed: " + e.getMessage());
+            // Не блокируем регистрацию из-за ошибки почты
+        }
 
         return "redirect:/verify-email?username=" + username;
     }
@@ -147,7 +179,13 @@ public class AuthController {
         String resetLink = baseUrl + "/reset-password?token=" + token;
         String message = "Для сброса пароля перейдите по ссылке: " + resetLink;
 
-        emailService.sendSimpleEmail(user.getEmail(), "Восстановление пароля на QuestPulse", message);
+        try {
+            emailService.sendSimpleEmail(user.getEmail(), "Восстановление пароля на QuestPulse", message);
+        } catch (Exception e) {
+            System.err.println("Email sending failed: " + e.getMessage());
+            model.addAttribute("error", "Не удалось отправить письмо. Попробуйте позже.");
+            return "forgot-password";
+        }
 
         model.addAttribute("success", "Инструкция по сбросу пароля отправлена на ваш email");
         return "forgot-password";
