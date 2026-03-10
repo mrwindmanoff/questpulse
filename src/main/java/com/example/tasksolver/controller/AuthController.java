@@ -74,83 +74,68 @@ public class AuthController {
                            Model model,
                            HttpServletResponse response) {
         
-
-        // String clientIp = loginAttemptService.getClientIP(); // можно оставить для сбора статистики, но проверки отключены
-        
-        // === АНТИТВИНК ВРЕМЕННО ОТКЛЮЧЕН ===
-        /*
-
+        // === ЭТИ СТРОКИ БЫЛИ УДАЛЕНЫ, ВОТ ИХ НУЖНО ВЕРНУТЬ ===
         String clientIp = loginAttemptService.getClientIP();
         String fingerprint = fingerprintService.getOrCreateFingerprint(response);
+        String browserFp = fingerprintService.getBrowserFingerprint();
         
-        // Проверка на блокировку IP
-
+        // Проверка на блокировку IP (можно временно отключить)
         if (loginAttemptService.isIpBlocked(clientIp)) {
             model.addAttribute("error", "Слишком много попыток регистрации. Попробуйте позже.");
             return "register";
         }
         
-
-        // Проверка на количество аккаунтов с этого IP (мягкое ограничение)
-
+        // Проверка на количество аккаунтов с этого IP
         if (!loginAttemptService.canRegisterFromIp(clientIp)) {
             int registeredCount = loginAttemptService.getIpAttempts(clientIp);
-            model.addAttribute("error", "С вашего IP зарегистрировано слишком много аккаунтов. Используйте другой браузер или обратитесь к администратору.");
+            model.addAttribute("error", "С вашего IP зарегистрировано слишком много аккаунтов.");
             return "register";
         }
         
-        // Проверка на количество аккаунтов с этого браузера (жёсткое ограничение)
-        if (!loginAttemptService.canRegisterFromFingerprint(fingerprint)) {
-            model.addAttribute("error", "С этого браузера уже зарегистрирован аккаунт. Один браузер = один аккаунт.");
+        // Проверка на количество аккаунтов с этого браузера
+        if (!loginAttemptService.canRegisterFromFingerprint(fingerprint) || 
+            !loginAttemptService.canRegisterFromFingerprint(browserFp)) {
+            model.addAttribute("error", "С этого браузера уже зарегистрирован аккаунт.");
             return "register";
         }
-        */
-        // === КОНЕЦ ОТКЛЮЧЕНИЯ ===
-
+        
         if (!password.equals(confirmPassword)) {
-            // loginAttemptService.registrationFailed(clientIp); // можно закомментировать, если не нужно
+            loginAttemptService.registrationFailed(clientIp);
             model.addAttribute("error", "Пароли не совпадают");
             return "register";
         }
 
         boolean registered = userService.registerUser(username, password, email);
         if (!registered) {
-            // loginAttemptService.registrationFailed(clientIp);
+            loginAttemptService.registrationFailed(clientIp);
             model.addAttribute("error", "Имя пользователя или email уже заняты");
             return "register";
         }
 
-
-        // Успешная регистрация — запоминаем IP (если нужно)
-        // loginAttemptService.registrationSucceeded(clientIp);
-
-        // Генерируем код подтверждения (можно отключить, если почта не работает)
-
         // Успешная регистрация — запоминаем IP и fingerprint
         loginAttemptService.registrationSucceeded(clientIp, fingerprint);
+        loginAttemptService.registrationSucceeded(clientIp, browserFp);
 
         // Генерируем код подтверждения
-
         User user = userService.findByUsername(username);
         String code = generateVerificationCode();
         user.setVerificationCode(code);
         user.setVerificationCodeExpiry(LocalDateTime.now().plusHours(24));
         userService.save(user);
 
-        // Попытка отправить письмо (не критично)
-	/*
+        // === ВРЕМЕННО ОТКЛЮЧАЕМ ОТПРАВКУ ПИСЬМА ===
+        /*
         try {
             String message = "Ваш код подтверждения для QuestPulse: " + code + "\nКод действителен 24 часа.";
             emailService.sendSimpleEmail(user.getEmail(), "Подтверждение email на QuestPulse", message);
         } catch (Exception e) {
             System.err.println("Email sending failed: " + e.getMessage());
         }
-	*/
-	// ==========================================
+        */
+        // ==========================================
 
-        return "redirect:/verify-email?username=" + username;
+        return "redirect:/login?registered";
     }
-
 
     @GetMapping("/verify-email")
     public String verifyEmailForm(@RequestParam String username, Model model) {
@@ -192,8 +177,6 @@ public class AuthController {
         return "redirect:/login?verified";
     }
 
-    // ========== ВОССТАНОВЛЕНИЕ ПАРОЛЯ (РАБОТАЕТ БЕЗ ПОЧТЫ) ==========
-
     @GetMapping("/forgot-password")
     public String forgotPasswordForm() {
         return "forgot-password";
@@ -207,17 +190,14 @@ public class AuthController {
             return "forgot-password";
         }
 
-        // Генерируем токен
         String token = java.util.UUID.randomUUID().toString();
         user.setResetPasswordToken(token);
         user.setResetPasswordTokenExpiry(LocalDateTime.now().plusHours(1));
         userService.save(user);
 
-        // Формируем ссылку для сброса
         String resetLink = baseUrl + "/reset-password?token=" + token;
 
-        // Вместо отправки email показываем ссылку прямо на странице
-        model.addAttribute("success", "Ссылка для сброса пароля сгенерирована. Нажмите на неё или скопируйте в браузер:");
+        model.addAttribute("success", "Ссылка для сброса пароля сгенерирована:");
         model.addAttribute("resetLink", resetLink);
 
         return "forgot-password";
@@ -258,7 +238,4 @@ public class AuthController {
 
         return "redirect:/login?resetSuccess";
     }
-
-    // ... остальные методы (verify-email, forgot-password, reset-password) без изменений
-
 }
