@@ -21,9 +21,10 @@ public class LeaderboardController {
 
     @GetMapping
     public String leaderboard(Model model) {
-        List<User> topUsers = userRepository.findAll(
+        // Получаем топ-10 пользователей, исключая администраторов
+        List<User> topUsers = userRepository.findTopUsersExcludingAdmins(
                 PageRequest.of(0, 10, Sort.by(Sort.Direction.DESC, "totalXp"))
-        ).getContent();
+        );
         model.addAttribute("users", topUsers);
         return "leaderboard";
     }
