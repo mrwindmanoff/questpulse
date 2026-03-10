@@ -68,40 +68,47 @@ public class AuthController {
                            @RequestParam String confirmPassword,
                            Model model) {
         
-        String clientIp = loginAttemptService.getClientIP();
+        // String clientIp = loginAttemptService.getClientIP(); // можно оставить для сбора статистики, но проверки отключены
         
+        // === АНТИТВИНК ВРЕМЕННО ОТКЛЮЧЕН ===
+        /*
         if (loginAttemptService.isIpBlocked(clientIp)) {
             model.addAttribute("error", "Слишком много попыток регистрации с вашего IP. Попробуйте через 24 часа.");
             return "register";
         }
         
         if (!loginAttemptService.canRegisterFromIp(clientIp)) {
+            int registeredCount = loginAttemptService.getRegisteredAccountsFromIp(clientIp);
             model.addAttribute("error", "С вашего IP уже зарегистрирован аккаунт. Максимум 1 аккаунт с одного IP.");
             return "register";
         }
-        
+        */
+        // === КОНЕЦ ОТКЛЮЧЕНИЯ ===
+
         if (!password.equals(confirmPassword)) {
-            loginAttemptService.registrationFailed(clientIp);
+            // loginAttemptService.registrationFailed(clientIp); // можно закомментировать, если не нужно
             model.addAttribute("error", "Пароли не совпадают");
             return "register";
         }
 
         boolean registered = userService.registerUser(username, password, email);
         if (!registered) {
-            loginAttemptService.registrationFailed(clientIp);
+            // loginAttemptService.registrationFailed(clientIp);
             model.addAttribute("error", "Имя пользователя или email уже заняты");
             return "register";
         }
 
-        loginAttemptService.registrationSucceeded(clientIp);
+        // Успешная регистрация — запоминаем IP (если нужно)
+        // loginAttemptService.registrationSucceeded(clientIp);
 
+        // Генерируем код подтверждения (можно отключить, если почта не работает)
         User user = userService.findByUsername(username);
         String code = generateVerificationCode();
         user.setVerificationCode(code);
         user.setVerificationCodeExpiry(LocalDateTime.now().plusHours(24));
         userService.save(user);
 
-        // Попытка отправить письмо (не критично, если не получится)
+        // Попытка отправить письмо (не критично)
         try {
             String message = "Ваш код подтверждения для QuestPulse: " + code + "\nКод действителен 24 часа.";
             emailService.sendSimpleEmail(user.getEmail(), "Подтверждение email на QuestPulse", message);
