@@ -13,6 +13,8 @@
     <p><strong>Автор:</strong> <a th:href="@{'/user/' + ${task.author.username}}" th:text="${task.author.username}">Автор</a></p>
     <p><strong>Сложность:</strong> <span th:text="${task.difficulty}">EASY</span></p>
     <p><strong>Награда:</strong> <span th:text="${task.rewardXp}">10</span> XP</p>
+    <p><strong>Жалоб:</strong> <span th:text="${task.reportCount}">0</span></p>
+    <p><strong>Лайков:</strong> <span th:text="${task.likeCount}">0</span> ❤️</p>
 
     <div class="task-description">
         <h3>Условие:</h3>
@@ -30,15 +32,25 @@
         <button type="submit">Отправить</button>
     </form>
 
+    <!-- Кнопка лайка (НЕ ПОКАЗЫВАЕМ АВТОРУ) -->
+    <div sec:authorize="isAuthenticated()" th:if="${#authentication.name != task.author.username}" style="margin-top: 1rem;">
+        <form method="post" th:action="@{|/tasks/${task.id}/like|}" style="display: inline;">
+            <button type="submit" class="btn" style="border-color: #f0f;">
+                ❤️ Похвалить (<span th:text="${task.likeCount}">0</span>)
+            </button>
+        </form>
+    </div>
+
     <!-- Кнопка жалобы (только для авторизованных, не для автора) -->
-    <div sec:authorize="isAuthenticated()" th:if="${#authentication.name != task.author.username}">
+    <div sec:authorize="isAuthenticated()" th:if="${#authentication.name != task.author.username}" style="margin-top: 1rem;">
         <form method="post" th:action="@{|/tasks/${task.id}/report|}">
-            <button type="submit" class="btn btn-danger" style="margin-top: 1rem;">Пожаловаться на задачу</button>
+            <button type="submit" class="btn btn-danger">Пожаловаться на задачу</button>
         </form>
     </div>
 
     <p><a href="/">← К списку задач</a></p>
 </div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

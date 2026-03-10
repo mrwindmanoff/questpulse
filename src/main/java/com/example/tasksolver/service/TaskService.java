@@ -2,10 +2,7 @@ package com.example.tasksolver.service;
 
 import com.example.tasksolver.dto.TaskForm;
 import com.example.tasksolver.model.*;
-import com.example.tasksolver.repository.ReportRepository;
-import com.example.tasksolver.repository.SolvedTaskRepository;
-import com.example.tasksolver.repository.TaskRepository;
-import com.example.tasksolver.repository.UserRepository;
+import com.example.tasksolver.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -26,6 +23,9 @@ public class TaskService {
 
     @Autowired
     private ReportRepository reportRepository;
+
+    @Autowired
+    private TaskLikeRepository taskLikeRepository;
 
     public List<Task> findAllTasks() {
         return taskRepository.findAllByOrderByCreatedAtDesc();
@@ -53,27 +53,34 @@ public class TaskService {
             return SolveResult.TASK_NOT_FOUND;
         }
 
+        // Запрещаем автору решать свою задачу
         if (task.getAuthor().getId().equals(solver.getId())) {
             return SolveResult.CANNOT_SOLVE_OWN_TASK;
         }
 
+        // Проверяем, решал ли уже эту задачу
         if (solvedTaskRepository.existsByUserAndTask(solver, task)) {
             return SolveResult.ALREADY_SOLVED;
         }
 
+        // Сравниваем ответ (без учета регистра, обрезаем пробелы)
         if (!task.getCorrectAnswer().trim().equalsIgnoreCase(answer.trim())) {
             return SolveResult.WRONG_ANSWER;
         }
 
+        // Всё верно – начисляем XP
         int reward = task.getRewardXp();
 
+        // Решателю
         solver.setTotalXp(solver.getTotalXp() + reward);
         userRepository.save(solver);
 
+        // Автору
         User author = task.getAuthor();
         author.setTotalXp(author.getTotalXp() + reward);
         userRepository.save(author);
 
+        // Запись о решении
         SolvedTask solved = new SolvedTask(solver, task);
         solvedTaskRepository.save(solved);
 
@@ -95,15 +102,42 @@ public class TaskService {
             return ReportResult.ALREADY_REPORTED;
         }
 
-        // Создаём жалобу (XP пока не начисляем)
         Report report = new Report(reporter, task);
         reportRepository.save(report);
 
-        // Увеличиваем счётчик репортов у задачи
         task.setReportCount(task.getReportCount() + 1);
         taskRepository.save(task);
 
         return ReportResult.SUCCESS;
+    }
+
+    // ========== ЛАЙК ЗАДАЧИ (С ЗАПРЕТОМ ДЛЯ АВТОРА) ==========
+    @Transactional
+    public LikeResult likeTask(Long taskId, User user) {
+        Task task = taskRepository.findById(taskId).orElse(null);
+        if (task == null) {
+            return LikeResult.TASK_NOT_FOUND;
+        }
+
+        // === ЗАПРЕЩАЕМ АВТОРУ ЛАЙКАТЬ СВОЮ ЗАДАЧУ ===
+        if (task.getAuthor().getId().equals(user.getId())) {
+            return LikeResult.CANNOT_LIKE_OWN_TASK;
+        }
+
+        // Проверяем, не лайкал ли уже
+        if (taskLikeRepository.existsByUserAndTask(user, task)) {
+            return LikeResult.ALREADY_LIKED;
+        }
+
+        // Создаём лайк
+        TaskLike like = new TaskLike(user, task);
+        taskLikeRepository.save(like);
+
+        // Увеличиваем счётчик лайков
+        task.setLikeCount(task.getLikeCount() + 1);
+        taskRepository.save(task);
+
+        return LikeResult.SUCCESS;
     }
 
     @Transactional
@@ -136,6 +170,7 @@ public class TaskService {
         // Удаляем все связанные записи
         solvedTaskRepository.deleteByTask(task);
         reportRepository.deleteByTask(task);
+        taskLikeRepository.deleteByTask(task);
         taskRepository.delete(task);
         return true;
     }
@@ -153,5 +188,13 @@ public class TaskService {
         TASK_NOT_FOUND,
         ALREADY_REPORTED,
         CANNOT_REPORT_OWN_TASK
+    }
+
+    // ========== ENUM ДЛЯ ЛАЙКОВ ==========
+    public enum LikeResult {
+        SUCCESS,
+        TASK_NOT_FOUND,
+        ALREADY_LIKED,
+        CANNOT_LIKE_OWN_TASK  // Добавлен запрет
     }
 }

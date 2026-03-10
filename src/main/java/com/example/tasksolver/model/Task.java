@@ -29,9 +29,16 @@ public class Task {
     // Количество жалоб
     private int reportCount = 0;
 
-    // Связь с отчётами (один ко многим)
+    // === НОВОЕ: Количество лайков ===
+    private int likeCount = 0;
+
+    // Связь с отчётами
     @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
     private Set<Report> reports = new HashSet<>();
+
+    // === НОВОЕ: Связь с лайками ===
+    @OneToMany(mappedBy = "task", cascade = CascadeType.ALL, orphanRemoval = true)
+    private Set<TaskLike> likes = new HashSet<>();
 
     @PrePersist
     protected void onCreate() {
@@ -73,10 +80,18 @@ public class Task {
     public void setAuthor(User author) { this.author = author; }
 
     public LocalDateTime getCreatedAt() { return createdAt; }
+    public void setCreatedAt(LocalDateTime createdAt) { this.createdAt = createdAt; }
 
     public int getReportCount() { return reportCount; }
     public void setReportCount(int reportCount) { this.reportCount = reportCount; }
 
+    // === НОВЫЕ ГЕТТЕРЫ И СЕТТЕРЫ ДЛЯ ЛАЙКОВ ===
+    public int getLikeCount() { return likeCount; }
+    public void setLikeCount(int likeCount) { this.likeCount = likeCount; }
+
     public Set<Report> getReports() { return reports; }
     public void setReports(Set<Report> reports) { this.reports = reports; }
+
+    public Set<TaskLike> getLikes() { return likes; }
+    public void setLikes(Set<TaskLike> likes) { this.likes = likes; }
 }

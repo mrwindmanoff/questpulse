@@ -2,8 +2,10 @@ package com.example.tasksolver.controller;
 
 import com.example.tasksolver.model.User;
 import com.example.tasksolver.service.EmailService;
+import com.example.tasksolver.service.FingerprintService;
 import com.example.tasksolver.service.LoginAttemptService;
 import com.example.tasksolver.service.UserService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -30,6 +32,9 @@ public class AuthController {
 
     @Autowired
     private LoginAttemptService loginAttemptService;
+
+    @Autowired
+    private FingerprintService fingerprintService;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -66,20 +71,37 @@ public class AuthController {
                            @RequestParam String email,
                            @RequestParam String password,
                            @RequestParam String confirmPassword,
-                           Model model) {
+                           Model model,
+                           HttpServletResponse response) {
         
+
         // String clientIp = loginAttemptService.getClientIP(); // можно оставить для сбора статистики, но проверки отключены
         
         // === АНТИТВИНК ВРЕМЕННО ОТКЛЮЧЕН ===
         /*
+
+        String clientIp = loginAttemptService.getClientIP();
+        String fingerprint = fingerprintService.getOrCreateFingerprint(response);
+        
+        // Проверка на блокировку IP
+
         if (loginAttemptService.isIpBlocked(clientIp)) {
-            model.addAttribute("error", "Слишком много попыток регистрации с вашего IP. Попробуйте через 24 часа.");
+            model.addAttribute("error", "Слишком много попыток регистрации. Попробуйте позже.");
             return "register";
         }
         
+
+        // Проверка на количество аккаунтов с этого IP (мягкое ограничение)
+
         if (!loginAttemptService.canRegisterFromIp(clientIp)) {
-            int registeredCount = loginAttemptService.getRegisteredAccountsFromIp(clientIp);
-            model.addAttribute("error", "С вашего IP уже зарегистрирован аккаунт. Максимум 1 аккаунт с одного IP.");
+            int registeredCount = loginAttemptService.getIpAttempts(clientIp);
+            model.addAttribute("error", "С вашего IP зарегистрировано слишком много аккаунтов. Используйте другой браузер или обратитесь к администратору.");
+            return "register";
+        }
+        
+        // Проверка на количество аккаунтов с этого браузера (жёсткое ограничение)
+        if (!loginAttemptService.canRegisterFromFingerprint(fingerprint)) {
+            model.addAttribute("error", "С этого браузера уже зарегистрирован аккаунт. Один браузер = один аккаунт.");
             return "register";
         }
         */
@@ -98,10 +120,17 @@ public class AuthController {
             return "register";
         }
 
+
         // Успешная регистрация — запоминаем IP (если нужно)
         // loginAttemptService.registrationSucceeded(clientIp);
 
         // Генерируем код подтверждения (можно отключить, если почта не работает)
+
+        // Успешная регистрация — запоминаем IP и fingerprint
+        loginAttemptService.registrationSucceeded(clientIp, fingerprint);
+
+        // Генерируем код подтверждения
+
         User user = userService.findByUsername(username);
         String code = generateVerificationCode();
         user.setVerificationCode(code);
@@ -109,15 +138,19 @@ public class AuthController {
         userService.save(user);
 
         // Попытка отправить письмо (не критично)
+	/*
         try {
             String message = "Ваш код подтверждения для QuestPulse: " + code + "\nКод действителен 24 часа.";
             emailService.sendSimpleEmail(user.getEmail(), "Подтверждение email на QuestPulse", message);
         } catch (Exception e) {
             System.err.println("Email sending failed: " + e.getMessage());
         }
+	*/
+	// ==========================================
 
         return "redirect:/verify-email?username=" + username;
     }
+
 
     @GetMapping("/verify-email")
     public String verifyEmailForm(@RequestParam String username, Model model) {
@@ -225,4 +258,7 @@ public class AuthController {
 
         return "redirect:/login?resetSuccess";
     }
+
+    // ... остальные методы (verify-email, forgot-password, reset-password) без изменений
+
 }

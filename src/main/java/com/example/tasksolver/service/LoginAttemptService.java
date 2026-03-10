@@ -15,17 +15,32 @@ import java.util.concurrent.TimeUnit;
 @Service
 public class LoginAttemptService {
 
-    public static final int MAX_REGISTRATION_ATTEMPT = 1; // Максимум 1 аккаунт с IP
-    public static final int MAX_FAILED_ATTEMPT = 5; // Максимум 5 неудачных попыток
+    // IP-based limits (мягкие)
+    public static final int MAX_REGISTRATION_PER_IP = 5; // 5 аккаунтов с одного IP (для офиса/класса)
+    public static final int MAX_FAILED_ATTEMPT = 10; // максимум неудачных попыток
     
-    private LoadingCache<String, Integer> registrationAttemptsCache;
+    // Fingerprint-based limits (жёсткие)
+    public static final int MAX_REGISTRATION_PER_FINGERPRINT = 1; // 1 аккаунт на браузер
+    
+    private LoadingCache<String, Integer> ipRegistrationCache;
+    private LoadingCache<String, Integer> fingerprintRegistrationCache;
     private LoadingCache<String, Integer> failedAttemptsCache;
+
+    @Autowired
+    private FingerprintService fingerprintService;
 
     public LoginAttemptService() {
         super();
         
-        // Кэш для отслеживания количества зарегистрированных аккаунтов с IP (хранится год)
-        registrationAttemptsCache = CacheBuilder.newBuilder()
+        ipRegistrationCache = CacheBuilder.newBuilder()
+                .expireAfterWrite(30, TimeUnit.DAYS)
+                .build(new CacheLoader<String, Integer>() {
+                    public Integer load(String key) {
+                        return 0;
+                    }
+                });
+        
+        fingerprintRegistrationCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(365, TimeUnit.DAYS)
                 .build(new CacheLoader<String, Integer>() {
                     public Integer load(String key) {
@@ -33,7 +48,6 @@ public class LoginAttemptService {
                     }
                 });
         
-        // Кэш для отслеживания неудачных попыток (блокировка на 24 часа)
         failedAttemptsCache = CacheBuilder.newBuilder()
                 .expireAfterWrite(1, TimeUnit.DAYS)
                 .build(new CacheLoader<String, Integer>() {
@@ -43,49 +57,52 @@ public class LoginAttemptService {
                 });
     }
 
-    public void registrationSucceeded(String key) {
-        int attempts;
-        try {
-            attempts = registrationAttemptsCache.get(key);
-        } catch (final ExecutionException e) {
-            attempts = 0;
-        }
-        attempts++;
-        registrationAttemptsCache.put(key, attempts);
+    public void registrationSucceeded(String ip, String fingerprint) {
+        // IP-based
+        int ipAttempts = getIpAttempts(ip);
+        ipRegistrationCache.put(ip, ipAttempts + 1);
+        
+        // Fingerprint-based
+        int fpAttempts = getFingerprintAttempts(fingerprint);
+        fingerprintRegistrationCache.put(fingerprint, fpAttempts + 1);
     }
 
-    public void registrationFailed(String key) {
-        int attempts;
-        try {
-            attempts = failedAttemptsCache.get(key);
-        } catch (final ExecutionException e) {
-            attempts = 0;
-        }
-        attempts++;
-        failedAttemptsCache.put(key, attempts);
+    public void registrationFailed(String ip) {
+        int attempts = getFailedAttempts(ip);
+        failedAttemptsCache.put(ip, attempts + 1);
     }
 
     public boolean isIpBlocked(String ip) {
-        try {
-            int failedAttempts = failedAttemptsCache.get(ip);
-            return failedAttempts >= MAX_FAILED_ATTEMPT;
-        } catch (final ExecutionException e) {
-            return false;
-        }
+        return getFailedAttempts(ip) >= MAX_FAILED_ATTEMPT;
     }
 
     public boolean canRegisterFromIp(String ip) {
+        return getIpAttempts(ip) < MAX_REGISTRATION_PER_IP;
+    }
+
+    public boolean canRegisterFromFingerprint(String fingerprint) {
+        return getFingerprintAttempts(fingerprint) < MAX_REGISTRATION_PER_FINGERPRINT;
+    }
+
+    public int getIpAttempts(String ip) {
         try {
-            int registeredAccounts = registrationAttemptsCache.get(ip);
-            return registeredAccounts < MAX_REGISTRATION_ATTEMPT;
+            return ipRegistrationCache.get(ip);
         } catch (final ExecutionException e) {
-            return true;
+            return 0;
         }
     }
 
-    public int getRegisteredAccountsFromIp(String ip) {
+    public int getFingerprintAttempts(String fingerprint) {
         try {
-            return registrationAttemptsCache.get(ip);
+            return fingerprintRegistrationCache.get(fingerprint);
+        } catch (final ExecutionException e) {
+            return 0;
+        }
+    }
+
+    public int getFailedAttempts(String ip) {
+        try {
+            return failedAttemptsCache.get(ip);
         } catch (final ExecutionException e) {
             return 0;
         }
@@ -98,9 +115,17 @@ public class LoginAttemptService {
         }
         HttpServletRequest request = attributes.getRequest();
         String xfHeader = request.getHeader("X-Forwarded-For");
-        if (xfHeader != null) {
-            return xfHeader.split(",")[0];
+        if (xfHeader != null && !xfHeader.isEmpty()) {
+            return xfHeader.split(",")[0].trim();
         }
         return request.getRemoteAddr();
+    }
+
+    public void resetIpAttempts(String ip) {
+        ipRegistrationCache.put(ip, 0);
+    }
+
+    public void resetFailedAttempts(String ip) {
+        failedAttemptsCache.put(ip, 0);
     }
 }

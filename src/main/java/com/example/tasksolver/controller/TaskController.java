@@ -95,7 +95,6 @@ public class TaskController {
         return "redirect:/tasks/" + id + "/solve";
     }
 
-    // Эндпоинт для жалобы
     @PostMapping("/{id}/report")
     public String reportTask(@PathVariable Long id,
                              RedirectAttributes redirectAttributes) {
@@ -107,13 +106,40 @@ public class TaskController {
         var result = taskService.reportTask(id, reporter);
         switch (result) {
             case SUCCESS:
-                redirectAttributes.addFlashAttribute("message", "Жалоба отправлена! +1 XP");
+                redirectAttributes.addFlashAttribute("message", "Жалоба отправлена!");
                 break;
             case CANNOT_REPORT_OWN_TASK:
                 redirectAttributes.addFlashAttribute("error", "Вы не можете жаловаться на свою задачу");
                 break;
             case ALREADY_REPORTED:
                 redirectAttributes.addFlashAttribute("error", "Вы уже жаловались на эту задачу");
+                break;
+            case TASK_NOT_FOUND:
+                redirectAttributes.addFlashAttribute("error", "Задача не найдена");
+                break;
+        }
+        return "redirect:/tasks/" + id + "/solve";
+    }
+
+    // ========== ЛАЙК С ОБРАБОТКОЙ ОШИБКИ ==========
+    @PostMapping("/{id}/like")
+    public String likeTask(@PathVariable Long id,
+                           RedirectAttributes redirectAttributes) {
+        User user = getCurrentUser();
+        if (user == null) {
+            return "redirect:/login";
+        }
+
+        var result = taskService.likeTask(id, user);
+        switch (result) {
+            case SUCCESS:
+                redirectAttributes.addFlashAttribute("message", "Задача понравилась! ❤️");
+                break;
+            case CANNOT_LIKE_OWN_TASK:
+                redirectAttributes.addFlashAttribute("error", "Нельзя хвалить свою задачу");
+                break;
+            case ALREADY_LIKED:
+                redirectAttributes.addFlashAttribute("error", "Вы уже похвалили эту задачу");
                 break;
             case TASK_NOT_FOUND:
                 redirectAttributes.addFlashAttribute("error", "Задача не найдена");
