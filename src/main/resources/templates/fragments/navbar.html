@@ -7,22 +7,22 @@
 <body>
 <div th:fragment="navbar">
     <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #0a0f0f; border-bottom: 2px solid #0ff; box-shadow: 0 0 20px #0ff;">
-        <div style="display: flex; gap: 2rem;">
+        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
             <a href="/" style="color: #f0f; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Главная</a>
             <a href="/leaders" style="color: #f0f; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Таблица лидеров</a>
+            <a sec:authorize="isAuthenticated()" th:if="${currentUser != null and currentUser.admin}" href="/admin/users" style="color: #ff4444; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Админка</a>
         </div>
-        <div style="display: flex; align-items: center; gap: 2rem;">
-            <div sec:authorize="isAuthenticated()">
-                Привет, <a th:href="@{'/user/' + ${#authentication.name}}" style="color: #f0f; text-decoration: underline;">[[${#authentication.name}]]</a>
-                (Звание: <span th:text="${currentUser != null ? currentUser.rank : 'Новичок'}">Новичок</span>)
-                | <a href="/profile" style="color: #f0f;">Профиль</a>
-                | <a th:href="@{/logout}" style="color: #f0f;">Выйти</a>
+        <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
+            <div sec:authorize="isAuthenticated()" style="display: flex; gap: 0.5rem; flex-wrap: wrap;">
+                <span>Привет, <a th:href="@{'/user/' + ${#authentication.name}}" style="color: #f0f; text-decoration: underline;">[[${#authentication.name}]]</a></span>
+                <span>(Звание: <span th:text="${currentUser != null ? currentUser.rank : 'Новичок'}">Новичок</span>)</span>
+                <a href="/profile" style="color: #f0f;">Профиль</a>
+                <a th:href="@{/logout}" style="color: #f0f;">Выйти</a>
             </div>
-            <div sec:authorize="!isAuthenticated()">
-                <a href="/login" style="color: #f0f;">[Вход]</a> |
+            <div sec:authorize="!isAuthenticated()" style="display: flex; gap: 0.5rem;">
+                <a href="/login" style="color: #f0f;">[Вход]</a>
                 <a href="/register" style="color: #f0f;">[Регистрация]</a>
             </div>
-            <!-- Логотип в правом верхнем углу -->
             <div style="font-size: 1.5rem; font-weight: bold; color: #0ff; text-shadow: 0 0 10px #0ff;">
                 QP
             </div>

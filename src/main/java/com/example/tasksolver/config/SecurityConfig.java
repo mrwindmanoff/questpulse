@@ -38,16 +38,25 @@ public class SecurityConfig {
             .authorizeHttpRequests(authz -> authz
                 // Публичные страницы
                 .requestMatchers(
-                    "/", "/leaders", "/register", "/login", "/css/**",
-                    "/forgot-password", "/forgot-password/**",
-                    "/reset-password", "/reset-password/**",
-                    "/reset-password-error", "/user/**"
+                    "/", 
+                    "/leaders", 
+                    "/register", 
+                    "/login", 
+                    "/css/**", 
+                    "/forgot-password", 
+                    "/forgot-password/**",
+                    "/reset-password", 
+                    "/reset-password/**",
+                    "/reset-password-error",
+                    "/user/**"
                 ).permitAll()
                 
                 // Подтверждение email
                 .requestMatchers(
-                    "/verify-email", "/verify-email/**",
-                    "/resend-code", "/resend-code/**"
+                    "/verify-email",
+                    "/verify-email/**",
+                    "/resend-code",
+                    "/resend-code/**"
                 ).permitAll()
                 
                 // H2 консоль
@@ -55,13 +64,16 @@ public class SecurityConfig {
                 
                 // Страницы для авторизованных
                 .requestMatchers(
-                    "/profile", "/profile/**",
-                    "/tasks/create", "/tasks/*/solve",
-                    "/tasks/*/report", "/tasks/*/delete"
+                    "/profile", 
+                    "/profile/**",
+                    "/tasks/create", 
+                    "/tasks/*/solve",
+                    "/tasks/*/report", 
+                    "/tasks/*/delete"
                 ).authenticated()
                 
                 // Админка
-                .requestMatchers("/admin/**").hasRole("ADMIN")
+                .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
                 
                 // Всё остальное требует авторизации
                 .anyRequest().authenticated()
@@ -72,7 +84,7 @@ public class SecurityConfig {
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/")
+                .logoutSuccessUrl("/")  // ← после выхода на главную
                 .permitAll()
             )
             .csrf(csrf -> csrf.ignoringRequestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")))
