@@ -6,6 +6,8 @@ import com.google.common.cache.LoadingCache;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
+import org.springframework.web.context.request.RequestContextHolder;
+import org.springframework.web.context.request.ServletRequestAttributes;
 
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -15,18 +17,16 @@ public class LoginAttemptService {
 
     public static final int MAX_REGISTRATION_ATTEMPT = 1; // Максимум 1 аккаунт с IP
     public static final int MAX_FAILED_ATTEMPT = 5; // Максимум 5 неудачных попыток
+    
     private LoadingCache<String, Integer> registrationAttemptsCache;
     private LoadingCache<String, Integer> failedAttemptsCache;
-
-    @Autowired
-    private HttpServletRequest request;
 
     public LoginAttemptService() {
         super();
         
-        // Кэш для отслеживания количества зарегистрированных аккаунтов с IP (хранится вечно)
+        // Кэш для отслеживания количества зарегистрированных аккаунтов с IP (хранится год)
         registrationAttemptsCache = CacheBuilder.newBuilder()
-                .expireAfterWrite(365, TimeUnit.DAYS) // храним год
+                .expireAfterWrite(365, TimeUnit.DAYS)
                 .build(new CacheLoader<String, Integer>() {
                     public Integer load(String key) {
                         return 0;
@@ -65,24 +65,16 @@ public class LoginAttemptService {
         failedAttemptsCache.put(key, attempts);
     }
 
-    public boolean isIpBlocked() {
-        String ip = getClientIP();
-        
-        // Проверяем, не заблокирован ли IP из-за слишком частых попыток
+    public boolean isIpBlocked(String ip) {
         try {
             int failedAttempts = failedAttemptsCache.get(ip);
-            if (failedAttempts >= MAX_FAILED_ATTEMPT) {
-                return true;
-            }
+            return failedAttempts >= MAX_FAILED_ATTEMPT;
         } catch (final ExecutionException e) {
-            // ignore
+            return false;
         }
-        
-        return false;
     }
 
-    public boolean canRegisterFromIp() {
-        String ip = getClientIP();
+    public boolean canRegisterFromIp(String ip) {
         try {
             int registeredAccounts = registrationAttemptsCache.get(ip);
             return registeredAccounts < MAX_REGISTRATION_ATTEMPT;
@@ -91,8 +83,7 @@ public class LoginAttemptService {
         }
     }
 
-    public int getRegisteredAccountsFromIp() {
-        String ip = getClientIP();
+    public int getRegisteredAccountsFromIp(String ip) {
         try {
             return registrationAttemptsCache.get(ip);
         } catch (final ExecutionException e) {
@@ -100,7 +91,12 @@ public class LoginAttemptService {
         }
     }
 
-    private String getClientIP() {
+    public String getClientIP() {
+        ServletRequestAttributes attributes = (ServletRequestAttributes) RequestContextHolder.getRequestAttributes();
+        if (attributes == null) {
+            return "unknown";
+        }
+        HttpServletRequest request = attributes.getRequest();
         String xfHeader = request.getHeader("X-Forwarded-For");
         if (xfHeader != null) {
             return xfHeader.split(",")[0];
