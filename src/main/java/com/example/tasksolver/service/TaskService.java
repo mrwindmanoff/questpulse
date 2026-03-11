@@ -2,7 +2,11 @@ package com.example.tasksolver.service;
 
 import com.example.tasksolver.dto.TaskForm;
 import com.example.tasksolver.model.*;
-import com.example.tasksolver.repository.*;
+import com.example.tasksolver.repository.PraiseRepository;
+import com.example.tasksolver.repository.ReportRepository;
+import com.example.tasksolver.repository.SolvedTaskRepository;
+import com.example.tasksolver.repository.TaskRepository;
+import com.example.tasksolver.repository.UserRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,12 +27,13 @@ public class TaskService {
 
     @Autowired
     private ReportRepository reportRepository;
-
+    
     @Autowired
-    private TaskLikeRepository taskLikeRepository;
+    private PraiseRepository praiseRepository;
 
     public List<Task> findAllTasks() {
-        return taskRepository.findAllByOrderByCreatedAtDesc();
+        // Сортируем по количеству похвал (сначала с большим количеством)
+        return taskRepository.findAllByOrderByPraiseCountDescCreatedAtDesc();
     }
 
     public Task findTaskById(Long id) {
@@ -53,34 +58,27 @@ public class TaskService {
             return SolveResult.TASK_NOT_FOUND;
         }
 
-        // Запрещаем автору решать свою задачу
         if (task.getAuthor().getId().equals(solver.getId())) {
             return SolveResult.CANNOT_SOLVE_OWN_TASK;
         }
 
-        // Проверяем, решал ли уже эту задачу
         if (solvedTaskRepository.existsByUserAndTask(solver, task)) {
             return SolveResult.ALREADY_SOLVED;
         }
 
-        // Сравниваем ответ (без учета регистра, обрезаем пробелы)
         if (!task.getCorrectAnswer().trim().equalsIgnoreCase(answer.trim())) {
             return SolveResult.WRONG_ANSWER;
         }
 
-        // Всё верно – начисляем XP
         int reward = task.getRewardXp();
 
-        // Решателю
         solver.setTotalXp(solver.getTotalXp() + reward);
         userRepository.save(solver);
 
-        // Автору
         User author = task.getAuthor();
         author.setTotalXp(author.getTotalXp() + reward);
         userRepository.save(author);
 
-        // Запись о решении
         SolvedTask solved = new SolvedTask(solver, task);
         solvedTaskRepository.save(solved);
 
@@ -110,34 +108,25 @@ public class TaskService {
 
         return ReportResult.SUCCESS;
     }
-
-    // ========== ЛАЙК ЗАДАЧИ (С ЗАПРЕТОМ ДЛЯ АВТОРА) ==========
+    
     @Transactional
-    public LikeResult likeTask(Long taskId, User user) {
+    public PraiseResult praiseTask(Long taskId, User user) {
         Task task = taskRepository.findById(taskId).orElse(null);
         if (task == null) {
-            return LikeResult.TASK_NOT_FOUND;
+            return PraiseResult.TASK_NOT_FOUND;
         }
 
-        // === ЗАПРЕЩАЕМ АВТОРУ ЛАЙКАТЬ СВОЮ ЗАДАЧУ ===
-        if (task.getAuthor().getId().equals(user.getId())) {
-            return LikeResult.CANNOT_LIKE_OWN_TASK;
+        if (praiseRepository.existsByUserAndTask(user, task)) {
+            return PraiseResult.ALREADY_PRAISED;
         }
 
-        // Проверяем, не лайкал ли уже
-        if (taskLikeRepository.existsByUserAndTask(user, task)) {
-            return LikeResult.ALREADY_LIKED;
-        }
+        Praise praise = new Praise(user, task);
+        praiseRepository.save(praise);
 
-        // Создаём лайк
-        TaskLike like = new TaskLike(user, task);
-        taskLikeRepository.save(like);
-
-        // Увеличиваем счётчик лайков
-        task.setLikeCount(task.getLikeCount() + 1);
+        task.setPraiseCount(task.getPraiseCount() + 1);
         taskRepository.save(task);
 
-        return LikeResult.SUCCESS;
+        return PraiseResult.SUCCESS;
     }
 
     @Transactional
@@ -150,7 +139,6 @@ public class TaskService {
             return false;
         }
 
-        // Если удаляет администратор (не автор), накладываем штраф на автора
         if (!isAuthor && currentUser.isAdmin()) {
             User author = task.getAuthor();
             int penalty = task.getReportCount();
@@ -159,7 +147,6 @@ public class TaskService {
                 userRepository.save(author);
             }
 
-            // Начисляем XP всем, кто жаловался (только при удалении админом)
             for (Report report : task.getReports()) {
                 User reporter = report.getUser();
                 reporter.setTotalXp(reporter.getTotalXp() + 1);
@@ -167,10 +154,9 @@ public class TaskService {
             }
         }
 
-        // Удаляем все связанные записи
         solvedTaskRepository.deleteByTask(task);
         reportRepository.deleteByTask(task);
-        taskLikeRepository.deleteByTask(task);
+        praiseRepository.deleteByTask(task);
         taskRepository.delete(task);
         return true;
     }
@@ -189,12 +175,10 @@ public class TaskService {
         ALREADY_REPORTED,
         CANNOT_REPORT_OWN_TASK
     }
-
-    // ========== ENUM ДЛЯ ЛАЙКОВ ==========
-    public enum LikeResult {
+    
+    public enum PraiseResult {
         SUCCESS,
         TASK_NOT_FOUND,
-        ALREADY_LIKED,
-        CANNOT_LIKE_OWN_TASK  // Добавлен запрет
+        ALREADY_PRAISED
     }
 }

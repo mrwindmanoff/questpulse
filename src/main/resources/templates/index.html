@@ -2,7 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
-    <title>Task Solver</title>
+    <title>QuestPulse</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
 <body>
@@ -27,10 +27,10 @@
                       th:classappend="|difficulty-${task.difficulty}|">EASY</span>
             </p>
             <p><strong>Награда:</strong> <span th:text="${task.rewardXp}">10</span> XP</p>
+            <p><strong>Похвал:</strong> <span style="color: #ffaa00;" th:text="${task.praiseCount}">0</span></p>
+            <p th:if="${task.reportCount > 0}"><strong>Жалоб:</strong> <span style="color: #ff4444;" th:text="${task.reportCount}">0</span></p>
             <div class="task-actions">
                 <a th:href="@{|/tasks/${task.id}/solve|}" class="btn">Решить</a>
-
-                <!-- Кнопка удаления для автора или администратора -->
                 <a th:if="${currentUser != null and (task.author.id == currentUser.id or currentUser.admin)}"
                    th:href="@{|/tasks/${task.id}/delete|}"
                    class="btn btn-danger"
@@ -39,6 +39,7 @@
         </div>
     </div>
 </div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

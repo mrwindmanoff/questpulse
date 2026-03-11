@@ -120,26 +120,22 @@ public class TaskController {
         }
         return "redirect:/tasks/" + id + "/solve";
     }
-
-    // ========== ЛАЙК С ОБРАБОТКОЙ ОШИБКИ ==========
-    @PostMapping("/{id}/like")
-    public String likeTask(@PathVariable Long id,
-                           RedirectAttributes redirectAttributes) {
+    
+    @PostMapping("/{id}/praise")
+    public String praiseTask(@PathVariable Long id,
+                             RedirectAttributes redirectAttributes) {
         User user = getCurrentUser();
         if (user == null) {
             return "redirect:/login";
         }
 
-        var result = taskService.likeTask(id, user);
+        var result = taskService.praiseTask(id, user);
         switch (result) {
             case SUCCESS:
-                redirectAttributes.addFlashAttribute("message", "Задача понравилась! ❤️");
+                redirectAttributes.addFlashAttribute("message", "Задача получила похвалу!");
                 break;
-            case CANNOT_LIKE_OWN_TASK:
-                redirectAttributes.addFlashAttribute("error", "Нельзя хвалить свою задачу");
-                break;
-            case ALREADY_LIKED:
-                redirectAttributes.addFlashAttribute("error", "Вы уже похвалили эту задачу");
+            case ALREADY_PRAISED:
+                redirectAttributes.addFlashAttribute("error", "Вы уже хвалили эту задачу");
                 break;
             case TASK_NOT_FOUND:
                 redirectAttributes.addFlashAttribute("error", "Задача не найдена");
