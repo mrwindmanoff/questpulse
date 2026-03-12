@@ -1,3 +1,4 @@
+/* ===== ОСНОВНЫЕ СТИЛИ (Desktop First) ===== */
 body {
     font-family: 'Courier New', monospace;
     margin: 0;
@@ -10,7 +11,7 @@ body {
 .container {
     max-width: 1200px;
     margin: 2rem auto;
-    padding: 0 1rem;
+    padding: 0 2rem;
 }
 
 h1, h2, h3 {
@@ -28,6 +29,7 @@ a:hover {
     text-shadow: 0 0 5px #f0f;
 }
 
+/* ===== КНОПКИ ===== */
 .btn, button {
     display: inline-block;
     background-color: transparent;
@@ -68,7 +70,28 @@ a:hover {
     color: #0a0f0f;
     box-shadow: 0 0 20px #ff4444;
 }
+.btn-success {
+    border-color: #0f0;
+    color: #0f0;
+    box-shadow: 0 0 5px #0f0;
+}
+.btn-success:hover {
+    background-color: #0f0;
+    color: #0a0f0f;
+    box-shadow: 0 0 20px #0f0;
+}
+.btn-warning {
+    border-color: #ffaa00;
+    color: #ffaa00;
+    box-shadow: 0 0 5px #ffaa00;
+}
+.btn-warning:hover {
+    background-color: #ffaa00;
+    color: #0a0f0f;
+    box-shadow: 0 0 20px #ffaa00;
+}
 
+/* ===== АЛЕРТЫ ===== */
 .alert {
     padding: 0.75rem;
     margin: 1rem 0;
@@ -85,10 +108,16 @@ a:hover {
     color: #f00;
     text-shadow: 0 0 5px #f00;
 }
+.info {
+    border-color: #f0f;
+    color: #f0f;
+    text-shadow: 0 0 5px #f0f;
+}
 
+/* ===== СЕТКА ЗАДАЧ (Desktop) ===== */
 .task-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    grid-template-columns: repeat(3, 1fr);
     gap: 1.5rem;
     margin-top: 1.5rem;
 }
@@ -113,12 +142,15 @@ a:hover {
     display: flex;
     gap: 1rem;
     margin-top: 1rem;
+    flex-wrap: wrap;
 }
 
+/* ===== СЛОЖНОСТЬ ЗАДАЧ ===== */
 .difficulty-EASY { color: #0f0; text-shadow: 0 0 5px #0f0; }
 .difficulty-MEDIUM { color: #ff0; text-shadow: 0 0 5px #ff0; }
 .difficulty-HARD { color: #f00; text-shadow: 0 0 5px #f00; }
 
+/* ===== ТАБЛИЦЫ (Desktop) ===== */
 table {
     width: 100%;
     border-collapse: collapse;
@@ -139,6 +171,7 @@ tr:hover {
     background-color: #2a2f3f;
 }
 
+/* ===== ФОРМЫ ===== */
 form div {
     margin-bottom: 1rem;
 }
@@ -151,7 +184,7 @@ label {
 }
 input[type="text"],
 input[type="password"],
-input[type="email"],    
+input[type="email"],
 textarea,
 select {
     width: 100%;
@@ -161,18 +194,22 @@ select {
     color: #c0f0f0;
     font-family: 'Courier New', monospace;
     font-size: 1rem;
+    box-sizing: border-box;
 }
 input:focus, textarea:focus, select:focus {
     outline: none;
     box-shadow: 0 0 10px #0ff;
 }
 
+/* ===== НАВИГАЦИЯ (Desktop) ===== */
 nav {
     background: #0a0f0f;
-    padding: 1rem;
+    padding: 1rem 2rem;
     display: flex;
-    gap: 2rem;
+    justify-content: space-between;
     align-items: center;
+    flex-wrap: wrap;
+    gap: 1rem;
     border-bottom: 2px solid #0ff;
     box-shadow: 0 0 20px #0ff;
 }
@@ -185,6 +222,31 @@ nav a {
 nav a:hover {
     text-shadow: 0 0 10px #f0f;
 }
+.nav-left {
+    display: flex;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.nav-right {
+    display: flex;
+    align-items: center;
+    gap: 2rem;
+    flex-wrap: wrap;
+}
+.user-menu {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    align-items: center;
+}
+.logo {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #0ff;
+    text-shadow: 0 0 10px #0ff;
+}
+
+/* ===== ПРОФИЛЬ ===== */
 .profile-card {
     background: #1a1f2f;
     border: 2px solid #0ff;
@@ -203,31 +265,18 @@ nav a:hover {
     display: inline-block;
     width: 120px;
 }
-.profile-card {
-    background: #1a1f2f;
-    border: 2px solid #0ff;
-    padding: 2rem;
-    margin: 2rem 0;
-    box-shadow: 0 0 15px rgba(0, 255, 255, 0.3);
-}
-.profile-card p {
-    font-size: 1.2rem;
-    margin: 1rem 0;
-    border-bottom: 1px dashed #0ff;
-    padding-bottom: 0.5rem;
-}
-.profile-card strong {
-    color: #f0f;
-    display: inline-block;
-    width: 120px;
-}
+
+/* ===== ФУТЕР (Desktop) ===== */
 footer {
     font-family: 'Courier New', monospace;
-}
-footer ul li {
-    margin-bottom: 0.5rem;
-    border-bottom: 1px dashed #0ff;
-    padding-bottom: 0.3rem;
+    background: #0a0f0f;
+    border-top: 2px solid #0ff;
+    padding: 2rem;
+    margin-top: 3rem;
+    display: flex;
+    justify-content: space-around;
+    flex-wrap: wrap;
+    gap: 2rem;
 }
 footer a {
     color: #f0f;
@@ -236,18 +285,213 @@ footer a {
 footer a:hover {
     text-shadow: 0 0 5px #f0f;
 }
-.btn-warning {
-    background-color: #ffaa00;
-    color: #000;
-    border-color: #ffaa00;
+footer ul li {
+    margin-bottom: 0.5rem;
+    border-bottom: 1px dashed #0ff;
+    padding-bottom: 0.3rem;
 }
-.btn-warning:hover {
-    background-color: #ffbb22;
-    color: #000;
-    box-shadow: 0 0 20px #ffaa00;
+
+/* ========== ПЛАНШЕТЫ (768px - 1024px) ========== */
+@media screen and (max-width: 1024px) and (min-width: 769px) {
+    .container {
+        max-width: 900px;
+        padding: 0 1.5rem;
+    }
+    
+    h1 {
+        font-size: 2.2rem;
+    }
+    
+    /* 2 колонки для задач на планшете */
+    .task-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 1.2rem;
+    }
+    
+    .task-card {
+        padding: 1.2rem;
+    }
+    
+    .task-actions {
+        flex-direction: row;
+    }
+    
+    table {
+        font-size: 0.95rem;
+    }
+    
+    nav {
+        padding: 0.8rem 1.5rem;
+    }
+    
+    .nav-left {
+        gap: 1.5rem;
+    }
+    
+    .nav-right {
+        gap: 1.5rem;
+    }
+    
+    footer {
+        padding: 1.8rem;
+        gap: 1.5rem;
+    }
 }
-.alert.info {
-    border-color: #f0f;
-    color: #f0f;
-    text-shadow: 0 0 5px #f0f;
+
+/* ========== ТЕЛЕФОНЫ (до 768px) ========== */
+@media screen and (max-width: 768px) {
+    .container {
+        padding: 0 1rem;
+        margin: 1rem auto;
+    }
+    
+    h1 {
+        font-size: 1.8rem;
+    }
+    
+    h2 {
+        font-size: 1.5rem;
+    }
+    
+    h3 {
+        font-size: 1.2rem;
+    }
+    
+    /* 1 колонка для задач на телефоне */
+    .task-grid {
+        grid-template-columns: 1fr;
+        gap: 1rem;
+    }
+    
+    .task-card {
+        padding: 1rem;
+    }
+    
+    .task-actions {
+        flex-direction: column;
+    }
+    
+    .task-actions .btn {
+        width: 100%;
+        text-align: center;
+        box-sizing: border-box;
+    }
+    
+    /* Таблицы становятся горизонтально скроллируемыми */
+    table {
+        display: block;
+        overflow-x: auto;
+        white-space: nowrap;
+        font-size: 0.9rem;
+    }
+    
+    th, td {
+        padding: 0.5rem;
+    }
+    
+    /* Навигация вертикальная */
+    nav {
+        flex-direction: column;
+        align-items: stretch;
+        padding: 0.8rem;
+    }
+    
+    .nav-left {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .nav-right {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.8rem;
+    }
+    
+    .user-menu {
+        flex-direction: column;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .logo {
+        margin-top: 0.5rem;
+    }
+    
+    /* Кнопки на всю ширину */
+    .btn, button {
+        width: 100%;
+        text-align: center;
+        padding: 0.8rem;
+    }
+    
+    /* Профиль */
+    .profile-card {
+        padding: 1rem;
+    }
+    
+    .profile-card p {
+        font-size: 1rem;
+        flex-direction: column;
+    }
+    
+    .profile-card strong {
+        width: auto;
+        margin-bottom: 0.3rem;
+    }
+    
+    /* Футер вертикальный */
+    footer {
+        flex-direction: column;
+        text-align: center;
+        padding: 1.5rem;
+    }
+    
+    footer > div {
+        width: 100%;
+    }
+    
+    footer ul li {
+        font-size: 0.9rem;
+    }
+    
+    /* Формы */
+    input[type="text"],
+    input[type="password"],
+    input[type="email"],
+    textarea,
+    select {
+        font-size: 16px; /* чтобы не зумилось на iPhone */
+    }
+}
+
+/* ========== МАЛЕНЬКИЕ ТЕЛЕФОНЫ (до 480px) ========== */
+@media screen and (max-width: 480px) {
+    .container {
+        padding: 0 0.8rem;
+    }
+    
+    h1 {
+        font-size: 1.5rem;
+    }
+    
+    .task-card h3 {
+        font-size: 1.1rem;
+    }
+    
+    .alert {
+        font-size: 0.9rem;
+    }
+    
+    footer h4 {
+        font-size: 1.1rem;
+    }
+    
+    footer ul li {
+        font-size: 0.8rem;
+    }
+    footer ul li.warning {
+    	color: #ff4444;
+    	border-color: #ff4444;
+    }
 }

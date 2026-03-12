@@ -6,30 +6,27 @@
 </head>
 <body>
 <div th:fragment="navbar">
-    <nav style="display: flex; justify-content: space-between; align-items: center; padding: 1rem; background: #0a0f0f; border-bottom: 2px solid #0ff; box-shadow: 0 0 20px #0ff;">
-        <div style="display: flex; gap: 2rem; flex-wrap: wrap;">
-            <a href="/" style="color: #f0f; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Главная</a>
-            <a href="/leaders" style="color: #f0f; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Таблица лидеров</a>
-            <a sec:authorize="isAuthenticated()" th:if="${currentUser != null and currentUser.admin}" href="/admin/users" style="color: #ff4444; text-transform: uppercase; letter-spacing: 2px; font-weight: bold;">Админка</a>
+    <nav>
+        <div class="nav-left">
+            <a href="/">Главная</a>
+            <a href="/leaders">Таблица лидеров</a>
+            <a sec:authorize="isAuthenticated()" th:if="${currentUser != null and currentUser.admin}" href="/admin/users">Админка</a>
         </div>
-        <div style="display: flex; align-items: center; gap: 2rem; flex-wrap: wrap;">
-            <div sec:authorize="isAuthenticated()" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center;">
-                <span>Привет, <a th:href="@{'/user/' + ${#authentication.name}}" style="color: #f0f; text-decoration: underline;">[[${#authentication.name}]]</a></span>
+        <div class="nav-right">
+            <div sec:authorize="isAuthenticated()" class="user-menu">
+                <span>Привет, <a th:href="@{'/user/' + ${#authentication.name}}">[[${#authentication.name}]]</a></span>
                 <span>(Звание: <span th:text="${currentUser != null ? currentUser.rank : 'Новичок'}">Новичок</span>)</span>
-                <a href="/profile" style="color: #f0f;">Профиль</a>
-                <!-- ФОРМА ВЫХОДА С POST ЗАПРОСОМ -->
+                <a href="/profile">Профиль</a>
                 <form th:action="@{/logout}" method="post" style="display: inline;">
                     <input type="submit" value="Выйти" 
                            style="background: none; border: none; color: #f0f; cursor: pointer; font-family: 'Courier New', monospace; font-size: 1rem; padding: 0; text-decoration: underline;">
                 </form>
             </div>
-            <div sec:authorize="!isAuthenticated()" style="display: flex; gap: 0.5rem;">
-                <a href="/login" style="color: #f0f;">[Вход]</a>
-                <a href="/register" style="color: #f0f;">[Регистрация]</a>
+            <div sec:authorize="!isAuthenticated()" class="user-menu">
+                <a href="/login">[Вход]</a>
+                <a href="/register">[Регистрация]</a>
             </div>
-            <div style="font-size: 1.5rem; font-weight: bold; color: #0ff; text-shadow: 0 0 10px #0ff;">
-                QP
-            </div>
+            <div class="logo">QP</div>
         </div>
     </nav>
 </div>
