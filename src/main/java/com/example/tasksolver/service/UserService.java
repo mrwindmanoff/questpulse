@@ -82,7 +82,6 @@ public class UserService {
         return userRepository.findAll();
     }
 
-    // Новый метод для проверки бана
     public boolean isUserBanned(String username) {
         User user = findByUsername(username);
         return user != null && user.isBanned();

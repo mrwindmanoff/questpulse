@@ -1,7 +1,7 @@
 package com.example.tasksolver.security;
 
 import com.example.tasksolver.model.User;
-import com.example.tasksolver.service.UserService;
+import com.example.tasksolver.repository.UserRepository;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
@@ -18,24 +18,33 @@ import java.io.IOException;
 public class BanFilter extends OncePerRequestFilter {
 
     @Autowired
-    private UserService userService;
+    private UserRepository userRepository;  // ← Используем репозиторий напрямую, а не сервис
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
+        
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
             String username = auth.getName();
-            User user = userService.findByUsername(username);
-            if (user != null && user.isBanned()) {
-                // Пользователь забанен - разлогиниваем
-                SecurityContextHolder.clearContext();
-                request.getSession().invalidate();
-                response.sendRedirect("/login?banned");
-                return;
-            }
+            
+            // Используем репозиторий напрямую
+            userRepository.findByUsername(username).ifPresent(user -> {
+                if (user.isBanned()) {
+                    // Пользователь забанен - разлогиниваем
+                    SecurityContextHolder.clearContext();
+                    request.getSession().invalidate();
+                    try {
+                        response.sendRedirect("/login?banned");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            });
         }
+        
         filterChain.doFilter(request, response);
     }
 }

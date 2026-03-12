@@ -42,49 +42,25 @@ public class SecurityConfig {
         http
             .addFilterBefore(banFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
-                // Публичные страницы
                 .requestMatchers(
-                    "/", 
-                    "/leaders", 
-                    "/register", 
-                    "/login", 
-                    "/css/**", 
-                    "/js/**",
-                    "/forgot-password", 
-                    "/forgot-password/**",
-                    "/reset-password", 
-                    "/reset-password/**",
-                    "/reset-password-error",
-                    "/user/**",
+                    "/", "/leaders", "/register", "/login", "/css/**", "/js/**",
+                    "/forgot-password", "/forgot-password/**",
+                    "/reset-password", "/reset-password/**",
+                    "/reset-password-error", "/user/**",
                     "/logout-success"
                 ).permitAll()
-                
-                // Подтверждение email
                 .requestMatchers(
-                    "/verify-email",
-                    "/verify-email/**",
-                    "/resend-code",
-                    "/resend-code/**"
+                    "/verify-email", "/verify-email/**",
+                    "/resend-code", "/resend-code/**"
                 ).permitAll()
-                
-                // H2 консоль (только для разработки)
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                
-                // Страницы, требующие авторизации
                 .requestMatchers(
-                    "/profile", 
-                    "/profile/**",
-                    "/tasks/create", 
-                    "/tasks/*/solve",
-                    "/tasks/*/report", 
-                    "/tasks/*/delete",
+                    "/profile", "/profile/**",
+                    "/tasks/create", "/tasks/*/solve",
+                    "/tasks/*/report", "/tasks/*/delete",
                     "/tasks/*/praise"
                 ).authenticated()
-                
-                // Админка (только для администраторов)
                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                
-                // Всё остальное требует авторизации
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form
