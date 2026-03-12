@@ -11,6 +11,9 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import jakarta.servlet.http.HttpServletRequest;
+import jakarta.servlet.http.HttpServletResponse;
+import org.springframework.security.web.authentication.logout.SecurityContextLogoutHandler;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -58,13 +61,11 @@ public class AdminController {
             return "redirect:/admin/users?error=banFailed";
         }
 
-        // 1. Удаляем все задачи пользователя
         List<Task> tasksToDelete = new ArrayList<>(user.getCreatedTasks());
         for (Task task : tasksToDelete) {
-            taskService.deleteTask(task.getId(), admin); // админ удаляет задачи
+            taskService.deleteTask(task.getId(), admin);
         }
 
-        // 2. Баним пользователя
         boolean banned = userService.banUser(username, reason, admin);
         if (banned) {
             return "redirect:/admin/users?banned=" + username;
@@ -89,7 +90,9 @@ public class AdminController {
     }
 
     @PostMapping("/make-admin/{username}")
-    public String makeAdmin(@PathVariable String username) {
+    public String makeAdmin(@PathVariable String username,
+                            HttpServletRequest request,
+                            HttpServletResponse response) {
         User admin = getCurrentUser();
         if (admin == null || !admin.isAdmin()) {
             return "redirect:/?error=notAuthorized";
@@ -99,13 +102,26 @@ public class AdminController {
         if (user != null && !user.isAdmin()) {
             user.setAdmin(true);
             userService.save(user);
+            
+            // Если мы назначаем админом не себя, разлогиниваем пользователя
+            if (!admin.getUsername().equals(username)) {
+                // Разлогиниваем назначенного админа (если он сейчас онлайн)
+                Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+                if (auth != null && auth.getName().equals(username)) {
+                    new SecurityContextLogoutHandler().logout(request, response, auth);
+                }
+                return "redirect:/admin/users?madeAdmin=" + username + "&logoutRequired=true";
+            }
+            
             return "redirect:/admin/users?madeAdmin=" + username;
         }
         return "redirect:/admin/users?error=makeAdminFailed";
     }
 
     @PostMapping("/remove-admin/{username}")
-    public String removeAdmin(@PathVariable String username) {
+    public String removeAdmin(@PathVariable String username,
+                              HttpServletRequest request,
+                              HttpServletResponse response) {
         User admin = getCurrentUser();
         if (admin == null || !admin.isAdmin()) {
             return "redirect:/?error=notAuthorized";
@@ -119,7 +135,14 @@ public class AdminController {
         if (user != null && user.isAdmin()) {
             user.setAdmin(false);
             userService.save(user);
-            return "redirect:/admin/users?removedAdmin=" + username;
+            
+            // Разлогиниваем пользователя, у которого сняли админку (если он онлайн)
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+            if (auth != null && auth.getName().equals(username)) {
+                new SecurityContextLogoutHandler().logout(request, response, auth);
+            }
+            
+            return "redirect:/admin/users?removedAdmin=" + username + "&logoutRequired=true";
         }
         return "redirect:/admin/users?error=removeAdminFailed";
     }

@@ -24,6 +24,9 @@
     <div th:if="${param.madeAdmin}" class="alert success">
         Пользователь <span th:text="${param.madeAdmin}">username</span> назначен администратором
     </div>
+    <div th:if="${param.logoutRequired}" class="alert info" style="border-color: #f0f; color: #f0f;">
+        ⚠️ Пользователь должен выйти и зайти снова, чтобы права администратора применились.
+    </div>
     <div th:if="${param.removedAdmin}" class="alert success">
         Пользователь <span th:text="${param.removedAdmin}">username</span> лишён прав администратора
     </div>
