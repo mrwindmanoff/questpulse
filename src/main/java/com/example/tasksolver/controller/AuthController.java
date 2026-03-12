@@ -2,10 +2,7 @@ package com.example.tasksolver.controller;
 
 import com.example.tasksolver.model.User;
 import com.example.tasksolver.service.EmailService;
-import com.example.tasksolver.service.FingerprintService;
-import com.example.tasksolver.service.LoginAttemptService;
 import com.example.tasksolver.service.UserService;
-import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,12 +26,6 @@ public class AuthController {
 
     @Autowired
     private EmailService emailService;
-
-    @Autowired
-    private LoginAttemptService loginAttemptService;
-
-    @Autowired
-    private FingerprintService fingerprintService;
 
     @Value("${app.base-url}")
     private String baseUrl;
@@ -71,70 +62,38 @@ public class AuthController {
                            @RequestParam String email,
                            @RequestParam String password,
                            @RequestParam String confirmPassword,
-                           Model model,
-                           HttpServletResponse response) {
-        
-        // === ЭТИ СТРОКИ БЫЛИ УДАЛЕНЫ, ВОТ ИХ НУЖНО ВЕРНУТЬ ===
-        String clientIp = loginAttemptService.getClientIP();
-        String fingerprint = fingerprintService.getOrCreateFingerprint(response);
-        String browserFp = fingerprintService.getBrowserFingerprint();
-        
-        // Проверка на блокировку IP (можно временно отключить)
-        if (loginAttemptService.isIpBlocked(clientIp)) {
-            model.addAttribute("error", "Слишком много попыток регистрации. Попробуйте позже.");
-            return "register";
-        }
-        
-        // Проверка на количество аккаунтов с этого IP
-        if (!loginAttemptService.canRegisterFromIp(clientIp)) {
-            int registeredCount = loginAttemptService.getIpAttempts(clientIp);
-            model.addAttribute("error", "С вашего IP зарегистрировано слишком много аккаунтов.");
-            return "register";
-        }
-        
-        // Проверка на количество аккаунтов с этого браузера
-        if (!loginAttemptService.canRegisterFromFingerprint(fingerprint) || 
-            !loginAttemptService.canRegisterFromFingerprint(browserFp)) {
-            model.addAttribute("error", "С этого браузера уже зарегистрирован аккаунт.");
-            return "register";
-        }
+                           Model model) {
         
         if (!password.equals(confirmPassword)) {
-            loginAttemptService.registrationFailed(clientIp);
             model.addAttribute("error", "Пароли не совпадают");
             return "register";
         }
 
         boolean registered = userService.registerUser(username, password, email);
         if (!registered) {
-            loginAttemptService.registrationFailed(clientIp);
             model.addAttribute("error", "Имя пользователя или email уже заняты");
             return "register";
         }
 
-        // Успешная регистрация — запоминаем IP и fingerprint
-        loginAttemptService.registrationSucceeded(clientIp, fingerprint);
-        loginAttemptService.registrationSucceeded(clientIp, browserFp);
+        // Флаг успешной регистрации для JavaScript
+        model.addAttribute("registrationSuccess", true);
 
-        // Генерируем код подтверждения
+        // Генерируем код подтверждения (опционально)
         User user = userService.findByUsername(username);
         String code = generateVerificationCode();
         user.setVerificationCode(code);
         user.setVerificationCodeExpiry(LocalDateTime.now().plusHours(24));
         userService.save(user);
 
-        // === ВРЕМЕННО ОТКЛЮЧАЕМ ОТПРАВКУ ПИСЬМА ===
-        /*
+        // Попытка отправить письмо (не критично)
         try {
             String message = "Ваш код подтверждения для QuestPulse: " + code + "\nКод действителен 24 часа.";
             emailService.sendSimpleEmail(user.getEmail(), "Подтверждение email на QuestPulse", message);
         } catch (Exception e) {
             System.err.println("Email sending failed: " + e.getMessage());
         }
-        */
-        // ==========================================
 
-        return "redirect:/login?registered";
+        return "register";
     }
 
     @GetMapping("/verify-email")
@@ -196,10 +155,17 @@ public class AuthController {
         userService.save(user);
 
         String resetLink = baseUrl + "/reset-password?token=" + token;
+        String message = "Для сброса пароля перейдите по ссылке: " + resetLink;
 
-        model.addAttribute("success", "Ссылка для сброса пароля сгенерирована:");
-        model.addAttribute("resetLink", resetLink);
+        try {
+            emailService.sendSimpleEmail(user.getEmail(), "Восстановление пароля на QuestPulse", message);
+        } catch (Exception e) {
+            System.err.println("Email sending failed: " + e.getMessage());
+            model.addAttribute("error", "Не удалось отправить письмо. Попробуйте позже.");
+            return "forgot-password";
+        }
 
+        model.addAttribute("success", "Инструкция по сбросу пароля отправлена на ваш email");
         return "forgot-password";
     }
 

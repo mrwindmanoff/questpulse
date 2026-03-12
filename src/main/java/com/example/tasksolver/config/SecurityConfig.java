@@ -1,5 +1,6 @@
 package com.example.tasksolver.config;
 
+import com.example.tasksolver.security.BanFilter;
 import com.example.tasksolver.service.CustomUserDetailsService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
@@ -10,6 +11,7 @@ import org.springframework.security.config.annotation.web.configuration.EnableWe
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 import org.springframework.security.web.util.matcher.AntPathRequestMatcher;
 
 @Configuration
@@ -18,6 +20,9 @@ public class SecurityConfig {
 
     @Autowired
     private CustomUserDetailsService userDetailsService;
+
+    @Autowired
+    private BanFilter banFilter;
 
     @Bean
     public PasswordEncoder passwordEncoder() {
@@ -35,48 +40,27 @@ public class SecurityConfig {
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
+            .addFilterBefore(banFilter, UsernamePasswordAuthenticationFilter.class)
             .authorizeHttpRequests(authz -> authz
-                // Публичные страницы
                 .requestMatchers(
-                    "/", 
-                    "/leaders", 
-                    "/register", 
-                    "/login", 
-                    "/css/**", 
-                    "/forgot-password", 
-                    "/forgot-password/**",
-                    "/reset-password", 
-                    "/reset-password/**",
-                    "/reset-password-error",
-                    "/user/**",
+                    "/", "/leaders", "/register", "/login", "/css/**",
+                    "/forgot-password", "/forgot-password/**",
+                    "/reset-password", "/reset-password/**",
+                    "/reset-password-error", "/user/**",
                     "/logout-success"
                 ).permitAll()
-                
-                // Подтверждение email
                 .requestMatchers(
-                    "/verify-email",
-                    "/verify-email/**",
-                    "/resend-code",
-                    "/resend-code/**"
+                    "/verify-email", "/verify-email/**",
+                    "/resend-code", "/resend-code/**"
                 ).permitAll()
-                
-                // H2 консоль
                 .requestMatchers(AntPathRequestMatcher.antMatcher("/h2-console/**")).permitAll()
-                
-                // Страницы для авторизованных
                 .requestMatchers(
-                    "/profile", 
-                    "/profile/**",
-                    "/tasks/create", 
-                    "/tasks/*/solve",
-                    "/tasks/*/report", 
-                    "/tasks/*/delete"
+                    "/profile", "/profile/**",
+                    "/tasks/create", "/tasks/*/solve",
+                    "/tasks/*/report", "/tasks/*/delete",
+                    "/tasks/*/praise"
                 ).authenticated()
-                
-                // Админка
                 .requestMatchers("/admin/**").hasAuthority("ROLE_ADMIN")
-                
-                // Всё остальное требует авторизации
                 .anyRequest().authenticated()
             )
             .formLogin(form -> form

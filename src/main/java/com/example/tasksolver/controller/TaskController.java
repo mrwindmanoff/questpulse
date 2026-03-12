@@ -50,6 +50,11 @@ public class TaskController {
         if (author == null) {
             return "redirect:/login";
         }
+        // Проверка на бан
+        if (author.isBanned()) {
+            redirectAttributes.addFlashAttribute("error", "Ваш аккаунт забанен. Вы не можете создавать задачи.");
+            return "redirect:/";
+        }
         taskService.createTask(form, author);
         redirectAttributes.addFlashAttribute("message", "Задача успешно создана!");
         return "redirect:/";
@@ -72,6 +77,11 @@ public class TaskController {
         User solver = getCurrentUser();
         if (solver == null) {
             return "redirect:/login";
+        }
+        // Проверка на бан
+        if (solver.isBanned()) {
+            redirectAttributes.addFlashAttribute("error", "Ваш аккаунт забанен. Вы не можете решать задачи.");
+            return "redirect:/";
         }
 
         var result = taskService.solveTask(id, answer, solver);
@@ -102,6 +112,11 @@ public class TaskController {
         if (reporter == null) {
             return "redirect:/login";
         }
+        // Проверка на бан
+        if (reporter.isBanned()) {
+            redirectAttributes.addFlashAttribute("error", "Ваш аккаунт забанен.");
+            return "redirect:/";
+        }
 
         var result = taskService.reportTask(id, reporter);
         switch (result) {
@@ -120,13 +135,18 @@ public class TaskController {
         }
         return "redirect:/tasks/" + id + "/solve";
     }
-    
+
     @PostMapping("/{id}/praise")
     public String praiseTask(@PathVariable Long id,
                              RedirectAttributes redirectAttributes) {
         User user = getCurrentUser();
         if (user == null) {
             return "redirect:/login";
+        }
+        // Проверка на бан
+        if (user.isBanned()) {
+            redirectAttributes.addFlashAttribute("error", "Ваш аккаунт забанен.");
+            return "redirect:/";
         }
 
         var result = taskService.praiseTask(id, user);
@@ -149,6 +169,11 @@ public class TaskController {
         User currentUser = getCurrentUser();
         if (currentUser == null) {
             return "redirect:/login";
+        }
+        // Проверка на бан (хотя удаление и так может быть запрещено)
+        if (currentUser.isBanned()) {
+            redirectAttributes.addFlashAttribute("error", "Ваш аккаунт забанен.");
+            return "redirect:/";
         }
         boolean deleted = taskService.deleteTask(id, currentUser);
         if (deleted) {

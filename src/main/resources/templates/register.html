@@ -4,6 +4,55 @@
     <meta charset="UTF-8">
     <title>Регистрация</title>
     <link rel="stylesheet" href="/css/style.css">
+    <script>
+        // Функция для получения куки по имени
+        function getCookie(name) {
+            let matches = document.cookie.match(new RegExp(
+                "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+            ));
+            return matches ? decodeURIComponent(matches[1]) : undefined;
+        }
+
+        // Функция для установки куки
+        function setCookie(name, value, days = 365) {
+            let expires = "";
+            if (days) {
+                let date = new Date();
+                date.setTime(date.getTime() + (days * 24 * 60 * 60 * 1000));
+                expires = "; expires=" + date.toUTCString();
+            }
+            document.cookie = name + "=" + (value || "") + expires + "; path=/";
+        }
+
+        // Проверка метки перед отправкой формы
+        function checkDeviceMark() {
+            // Проверяем localStorage
+            let localMark = localStorage.getItem('questpulse_device_id');
+            
+            // Проверяем куки
+            let cookieMark = getCookie('questpulse_device_id');
+            
+            // Если метка есть в localStorage или куки — блокируем
+            if (localMark || cookieMark) {
+                alert('С этого устройства уже зарегистрирован аккаунт. Максимум 1 аккаунт на устройство.');
+                return false;
+            }
+            
+            return true;
+        }
+
+        // Функция для сохранения метки после успешной регистрации
+        function saveDeviceMark() {
+            let deviceId = 'device_' + Math.random().toString(36).substring(2, 15) + 
+                          Math.random().toString(36).substring(2, 15);
+            
+            // Сохраняем в localStorage
+            localStorage.setItem('questpulse_device_id', deviceId);
+            
+            // Сохраняем в куки
+            setCookie('questpulse_device_id', deviceId, 365);
+        }
+    </script>
 </head>
 <body>
 <div th:replace="~{fragments/navbar :: navbar}"></div>
@@ -12,8 +61,9 @@
     <h1>Регистрация</h1>
 
     <div th:if="${error}" class="alert error" th:text="${error}"></div>
+    <div th:if="${deviceError}" class="alert error" th:text="${deviceError}"></div>
 
-    <form method="post" th:action="@{/register}">
+    <form method="post" th:action="@{/register}" onsubmit="return checkDeviceMark()">
         <div>
             <label>Имя пользователя:</label>
             <input type="text" name="username" required>
@@ -34,6 +84,12 @@
     </form>
     <p>Уже есть аккаунт? <a href="/login">Войти</a></p>
 </div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
+
+<!-- Если регистрация прошла успешно, вызываем сохранение метки -->
+<script th:if="${registrationSuccess}">
+    saveDeviceMark();
+</script>
 </body>
 </html>
