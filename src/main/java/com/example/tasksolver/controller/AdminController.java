@@ -1,6 +1,8 @@
 package com.example.tasksolver.controller;
 
+import com.example.tasksolver.model.Task;
 import com.example.tasksolver.model.User;
+import com.example.tasksolver.service.TaskService;
 import com.example.tasksolver.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -9,12 +11,18 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Controller
 @RequestMapping("/admin")
 public class AdminController {
 
     @Autowired
     private UserService userService;
+
+    @Autowired
+    private TaskService taskService;
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -45,6 +53,18 @@ public class AdminController {
             return "redirect:/?error=notAuthorized";
         }
 
+        User user = userService.findByUsername(username);
+        if (user == null || user.isAdmin()) {
+            return "redirect:/admin/users?error=banFailed";
+        }
+
+        // 1. Удаляем все задачи пользователя
+        List<Task> tasksToDelete = new ArrayList<>(user.getCreatedTasks());
+        for (Task task : tasksToDelete) {
+            taskService.deleteTask(task.getId(), admin); // админ удаляет задачи
+        }
+
+        // 2. Баним пользователя
         boolean banned = userService.banUser(username, reason, admin);
         if (banned) {
             return "redirect:/admin/users?banned=" + username;

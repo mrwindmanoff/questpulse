@@ -14,11 +14,17 @@
     <div th:if="${param.error}" class="alert error">
         Неверное имя пользователя или пароль.
     </div>
+    <div th:if="${param.banned}" class="alert error">
+        ⚠️ Ваш аккаунт забанен. Доступ запрещён.
+    </div>
     <div th:if="${param.registered}" class="alert success">
         Регистрация прошла успешно! Войдите.
     </div>
     <div th:if="${param.resetSuccess}" class="alert success">
         Пароль успешно изменён! Войдите с новым паролем.
+    </div>
+    <div th:if="${param.verified}" class="alert success">
+        Email успешно подтверждён! Теперь вы можете войти.
     </div>
 
     <form method="post" th:action="@{/login}">
@@ -39,6 +45,7 @@
 
     <p>Нет аккаунта? <a href="/register">Зарегистрироваться</a></p>
 </div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>
