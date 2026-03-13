@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Профиль</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -21,7 +22,6 @@
         <p th:if="${user.banned and user.banReason != null}"><strong>Причина бана:</strong> <span th:text="${user.banReason}"></span></p>
     </div>
 
-    <!-- Кнопка для админов: переход в админ-панель -->
     <div th:if="${user.admin}" style="margin-top: 2rem; text-align: center;">
         <a href="/admin/users" class="btn btn-danger" style="padding: 1rem 2rem; font-size: 1.2rem; border-width: 3px;">
             ⚡ Управление пользователями (админка)

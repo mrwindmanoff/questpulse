@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Решить задачу</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -31,14 +32,12 @@
         <button type="submit">Отправить</button>
     </form>
 
-    <!-- Кнопка похвалы (только для авторизованных, не для автора) -->
     <div sec:authorize="isAuthenticated()" th:if="${#authentication.name != task.author.username}">
         <form method="post" th:action="@{|/tasks/${task.id}/praise|}" style="margin-top: 1rem; display: inline-block;">
             <button type="submit" class="btn" style="border-color: #ffaa00; color: #ffaa00;">👍 Похвалить задачу</button>
         </form>
     </div>
 
-    <!-- Кнопка жалобы (только для авторизованных, не для автора) -->
     <div sec:authorize="isAuthenticated()" th:if="${#authentication.name != task.author.username}">
         <form method="post" th:action="@{|/tasks/${task.id}/report|}" style="margin-top: 1rem; display: inline-block;">
             <button type="submit" class="btn btn-danger">⚠️ Пожаловаться</button>

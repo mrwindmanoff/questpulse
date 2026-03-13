@@ -114,7 +114,7 @@ a:hover {
     text-shadow: 0 0 5px #f0f;
 }
 
-/* ===== СЕТКА ЗАДАЧ (Desktop) ===== */
+/* ===== СЕТКА ЗАДАЧ (Desktop - 3 колонки) ===== */
 .task-grid {
     display: grid;
     grid-template-columns: repeat(3, 1fr);
@@ -137,6 +137,7 @@ a:hover {
     margin-top: 0;
     border-bottom: 1px dashed #0ff;
     padding-bottom: 0.5rem;
+    font-size: 1.3rem;
 }
 .task-actions {
     display: flex;
@@ -285,13 +286,30 @@ footer a {
 footer a:hover {
     text-shadow: 0 0 5px #f0f;
 }
+footer ul {
+    list-style-type: none;
+    padding: 0;
+}
 footer ul li {
     margin-bottom: 0.5rem;
     border-bottom: 1px dashed #0ff;
     padding-bottom: 0.3rem;
 }
+footer ul li.warning {
+    color: #ff4444;
+    border-color: #ff4444;
+}
+footer h4 {
+    color: #f0f;
+    margin-bottom: 1rem;
+}
 
-/* ========== ПЛАНШЕТЫ (768px - 1024px) ========== */
+/* ===== ДЕСКТОПЫ (1025px и больше) ===== */
+@media screen and (min-width: 1025px) {
+    /* Уже определено выше */
+}
+
+/* ===== ПЛАНШЕТЫ (769px - 1024px) ===== */
 @media screen and (max-width: 1024px) and (min-width: 769px) {
     .container {
         max-width: 900px;
@@ -310,6 +328,10 @@ footer ul li {
     
     .task-card {
         padding: 1.2rem;
+    }
+    
+    .task-card h3 {
+        font-size: 1.2rem;
     }
     
     .task-actions {
@@ -332,13 +354,17 @@ footer ul li {
         gap: 1.5rem;
     }
     
+    .profile-card p {
+        font-size: 1.1rem;
+    }
+    
     footer {
         padding: 1.8rem;
         gap: 1.5rem;
     }
 }
 
-/* ========== ТЕЛЕФОНЫ (до 768px) ========== */
+/* ===== ТЕЛЕФОНЫ (до 768px) ===== */
 @media screen and (max-width: 768px) {
     .container {
         padding: 0 1rem;
@@ -365,6 +391,10 @@ footer ul li {
     
     .task-card {
         padding: 1rem;
+    }
+    
+    .task-card h3 {
+        font-size: 1.1rem;
     }
     
     .task-actions {
@@ -423,6 +453,7 @@ footer ul li {
         width: 100%;
         text-align: center;
         padding: 0.8rem;
+        box-sizing: border-box;
     }
     
     /* Профиль */
@@ -432,6 +463,7 @@ footer ul li {
     
     .profile-card p {
         font-size: 1rem;
+        display: flex;
         flex-direction: column;
     }
     
@@ -463,9 +495,21 @@ footer ul li {
     select {
         font-size: 16px; /* чтобы не зумилось на iPhone */
     }
+    
+    /* Админка на телефоне */
+    .admin-actions form {
+        display: flex;
+        flex-direction: column;
+        gap: 0.5rem;
+    }
+    
+    .admin-actions input[type="text"] {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
 }
 
-/* ========== МАЛЕНЬКИЕ ТЕЛЕФОНЫ (до 480px) ========== */
+/* ===== МАЛЕНЬКИЕ ТЕЛЕФОНЫ (до 480px) ===== */
 @media screen and (max-width: 480px) {
     .container {
         padding: 0 0.8rem;
@@ -476,7 +520,7 @@ footer ul li {
     }
     
     .task-card h3 {
-        font-size: 1.1rem;
+        font-size: 1rem;
     }
     
     .alert {
@@ -490,8 +534,8 @@ footer ul li {
     footer ul li {
         font-size: 0.8rem;
     }
-    footer ul li.warning {
-    	color: #ff4444;
-    	border-color: #ff4444;
+    
+    .profile-card p {
+        font-size: 0.9rem;
     }
 }

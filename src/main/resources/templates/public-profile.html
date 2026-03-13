@@ -2,6 +2,7 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title th:text="${profileUser.username} + ' - профиль'">Профиль</title>
     <link rel="stylesheet" href="/css/style.css">
 </head>
@@ -14,11 +15,13 @@
     <div class="profile-card">
         <p><strong>Звание:</strong> <span th:text="${profileUser.rank}">Новичок</span></p>
         <p><strong>Опыт (XP):</strong> <span th:text="${profileUser.totalXp}">0</span></p>
-        <!-- позже добавим аватар и соцсети -->
+        <p th:if="${profileUser.admin}"><strong>Статус:</strong> <span style="color: #f0f;">Администратор</span></p>
+        <p th:if="${profileUser.banned}"><strong>Статус:</strong> <span style="color: #ff4444;">ЗАБАНЕН</span></p>
     </div>
 
     <p><a href="/">← На главную</a></p>
 </div>
+
 <div th:replace="~{fragments/footer :: footer}"></div>
 </body>
 </html>

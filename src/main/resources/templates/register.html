@@ -2,10 +2,10 @@
 <html xmlns:th="http://www.thymeleaf.org">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>Регистрация</title>
     <link rel="stylesheet" href="/css/style.css">
     <script>
-        // Функция для получения куки по имени
         function getCookie(name) {
             let matches = document.cookie.match(new RegExp(
                 "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -13,7 +13,6 @@
             return matches ? decodeURIComponent(matches[1]) : undefined;
         }
 
-        // Функция для установки куки
         function setCookie(name, value, days = 365) {
             let expires = "";
             if (days) {
@@ -24,32 +23,21 @@
             document.cookie = name + "=" + (value || "") + expires + "; path=/";
         }
 
-        // Проверка метки перед отправкой формы
         function checkDeviceMark() {
-            // Проверяем localStorage
             let localMark = localStorage.getItem('questpulse_device_id');
-            
-            // Проверяем куки
             let cookieMark = getCookie('questpulse_device_id');
             
-            // Если метка есть в localStorage или куки — блокируем
             if (localMark || cookieMark) {
                 alert('С этого устройства уже зарегистрирован аккаунт. Максимум 1 аккаунт на устройство.');
                 return false;
             }
-            
             return true;
         }
 
-        // Функция для сохранения метки после успешной регистрации
         function saveDeviceMark() {
             let deviceId = 'device_' + Math.random().toString(36).substring(2, 15) + 
                           Math.random().toString(36).substring(2, 15);
-            
-            // Сохраняем в localStorage
             localStorage.setItem('questpulse_device_id', deviceId);
-            
-            // Сохраняем в куки
             setCookie('questpulse_device_id', deviceId, 365);
         }
     </script>
@@ -87,7 +75,6 @@
 
 <div th:replace="~{fragments/footer :: footer}"></div>
 
-<!-- Если регистрация прошла успешно, вызываем сохранение метки -->
 <script th:if="${registrationSuccess}">
     saveDeviceMark();
 </script>
