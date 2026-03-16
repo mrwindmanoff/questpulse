@@ -7,6 +7,7 @@ import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.web.bind.annotation.GetMapping;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Controller
@@ -18,7 +19,8 @@ public class ActivityController {
     @GetMapping("/fragment/activities")
     public String getActivitiesFragment(Model model) {
         List<Activity> activities = activityRepository.findTop10Latest();
-        model.addAttribute("activities", activities);
+        // Всегда передаём список, даже если он пустой
+        model.addAttribute("activities", activities != null ? activities : new ArrayList<>());
         return "fragments/activities :: activitiesList";
     }
 }
