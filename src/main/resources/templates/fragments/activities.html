@@ -8,9 +8,12 @@
     <div class="activities-container" style="margin-top: 2rem; background: #1a1f2f; border: 2px solid #0ff; padding: 1rem;">
         <h3 style="color: #f0f; margin-top: 0;">📢 Последние действия</h3>
         <div class="activities-list" style="max-height: 200px; overflow-y: auto;">
+            <div th:if="${activities.isEmpty()}" style="color: #c0f0f0; text-align: center; padding: 1rem;">
+                Пока нет действий
+            </div>
             <div th:each="activity : ${activities}" 
                  style="padding: 0.5rem; border-bottom: 1px dashed #0ff; color: #c0f0f0;">
-                <span th:text="${activity.timestamp}">2026-03-16</span> - 
+                <span th:text="${#temporals.format(activity.timestamp, 'HH:mm dd.MM')}">16:30 16.03</span> - 
                 <a th:href="@{'/user/' + ${activity.username}}" style="color: #f0f;" th:text="${activity.username}">user</a>
                 <span th:if="${activity.action == 'CREATED_TASK'}">➕ создал задачу "</span>
                 <span th:if="${activity.action == 'SOLVED_TASK'}">✅ решил задачу "</span>

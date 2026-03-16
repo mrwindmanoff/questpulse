@@ -6,6 +6,6 @@ import org.springframework.data.jpa.repository.Query;
 import java.util.List;
 
 public interface ActivityRepository extends JpaRepository<Activity, Long> {
-    @Query("SELECT a FROM Activity a ORDER BY a.timestamp DESC LIMIT 10")
+    @Query("SELECT a FROM Activity a ORDER BY a.timestamp DESC")
     List<Activity> findTop10Latest();
 }
