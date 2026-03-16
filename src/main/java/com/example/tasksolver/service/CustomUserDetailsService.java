@@ -24,6 +24,7 @@ public class CustomUserDetailsService implements UserDetailsService {
         User user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new UsernameNotFoundException("User not found: " + username));
 
+        // Проверка бана прямо при загрузке пользователя
         if (user.isBanned()) {
             throw new UsernameNotFoundException("User is banned: " + user.getBanReason());
         }

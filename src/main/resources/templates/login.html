@@ -12,22 +12,32 @@
 <div class="container">
     <h1>Вход</h1>
 
+    <!-- Сообщение об ошибке входа -->
     <div th:if="${param.error}" class="alert error">
         Неверное имя пользователя или пароль.
     </div>
+    
+    <!-- Сообщение о бане -->
     <div th:if="${param.banned}" class="alert error">
         ⚠️ Ваш аккаунт забанен. Доступ запрещён.
     </div>
+    
+    <!-- Сообщение об успешной регистрации -->
     <div th:if="${param.registered}" class="alert success">
         Регистрация прошла успешно! Войдите.
     </div>
+    
+    <!-- Сообщение об успешной смене пароля -->
     <div th:if="${param.resetSuccess}" class="alert success">
         Пароль успешно изменён! Войдите с новым паролем.
     </div>
+    
+    <!-- Сообщение о подтверждении email -->
     <div th:if="${param.verified}" class="alert success">
         Email успешно подтверждён! Теперь вы можете войти.
     </div>
 
+    <!-- Форма входа -->
     <form method="post" th:action="@{/login}">
         <div>
             <label>Имя пользователя:</label>
@@ -40,6 +50,7 @@
         <button type="submit">Войти</button>
     </form>
 
+    <!-- Ссылки -->
     <p style="margin-top: 1rem;">
         <a href="/forgot-password">Забыли пароль?</a>
     </p>
