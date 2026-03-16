@@ -20,6 +20,9 @@ public class AchievementService {
     
     @Autowired
     private SolvedTaskRepository solvedTaskRepository;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     @Transactional
     public void checkAndAwardAchievements(User user) {
@@ -27,9 +30,12 @@ public class AchievementService {
         if (!achievementRepository.existsByUserAndType(user, "FIRST_TASK")) {
             int createdCount = taskRepository.countByAuthor(user);
             if (createdCount >= 1) {
-                achievementRepository.save(new Achievement(
+                Achievement ach = new Achievement(
                     user, "FIRST_TASK", "Создатель", "Создал первую задачу"
-                ));
+                );
+                achievementRepository.save(ach);
+                notificationService.createNotification(user, "ACHIEVEMENT", 
+                    "🏆 Получено достижение: Создатель!");
             }
         }
         
@@ -37,9 +43,12 @@ public class AchievementService {
         if (!achievementRepository.existsByUserAndType(user, "TEN_TASKS")) {
             int createdCount = taskRepository.countByAuthor(user);
             if (createdCount >= 10) {
-                achievementRepository.save(new Achievement(
+                Achievement ach = new Achievement(
                     user, "TEN_TASKS", "Плодовитый автор", "Создал 10 задач"
-                ));
+                );
+                achievementRepository.save(ach);
+                notificationService.createNotification(user, "ACHIEVEMENT", 
+                    "🏆 Получено достижение: Плодовитый автор!");
             }
         }
         
@@ -47,9 +56,12 @@ public class AchievementService {
         if (!achievementRepository.existsByUserAndType(user, "FIRST_SOLVE")) {
             int solvedCount = solvedTaskRepository.countByUser(user);
             if (solvedCount >= 1) {
-                achievementRepository.save(new Achievement(
+                Achievement ach = new Achievement(
                     user, "FIRST_SOLVE", "Решатель", "Решил первую задачу"
-                ));
+                );
+                achievementRepository.save(ach);
+                notificationService.createNotification(user, "ACHIEVEMENT", 
+                    "🏆 Получено достижение: Решатель!");
             }
         }
         
@@ -57,9 +69,12 @@ public class AchievementService {
         if (!achievementRepository.existsByUserAndType(user, "TEN_SOLVES")) {
             int solvedCount = solvedTaskRepository.countByUser(user);
             if (solvedCount >= 10) {
-                achievementRepository.save(new Achievement(
+                Achievement ach = new Achievement(
                     user, "TEN_SOLVES", "Опытный решатель", "Решил 10 задач"
-                ));
+                );
+                achievementRepository.save(ach);
+                notificationService.createNotification(user, "ACHIEVEMENT", 
+                    "🏆 Получено достижение: Опытный решатель!");
             }
         }
     }

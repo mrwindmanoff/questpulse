@@ -13,11 +13,22 @@
             <a sec:authorize="isAuthenticated()" th:if="${currentUser != null and currentUser.admin}" href="/admin/users">Админка</a>
         </div>
         <div class="nav-right">
-            <!-- СЧЁТЧИК ОНЛАЙН (серверный) -->
+            <!-- СЧЁТЧИК ОНЛАЙН -->
             <div class="online-counter" style="color: #0ff; border: 1px solid #0ff; padding: 5px 10px; border-radius: 20px; display: inline-block; margin-right: 10px;">
                 👥 <span th:text="${onlineCount}">0</span> онлайн
             </div>
             
+            <!-- УВЕДОМЛЕНИЯ (только для авторизованных) -->
+            <div sec:authorize="isAuthenticated()" style="position: relative; display: inline-block; margin-right: 15px;">
+                <a href="/notifications" style="color: #f0f; text-decoration: none; font-size: 1.2rem;">
+                    🔔
+                    <span th:if="${unreadNotificationsCount > 0}" 
+                          style="background: #ff4444; color: white; border-radius: 50%; padding: 2px 6px; font-size: 0.8rem; position: absolute; top: -8px; right: -10px; min-width: 18px; text-align: center;"
+                          th:text="${unreadNotificationsCount}">0</span>
+                </a>
+            </div>
+            
+            <!-- МЕНЮ ДЛЯ АВТОРИЗОВАННЫХ -->
             <div sec:authorize="isAuthenticated()" class="user-menu">
                 <span>Привет, <a th:href="@{'/user/' + ${#authentication.name}}">[[${#authentication.name}]]</a></span>
                 <span>(Звание: <span th:text="${currentUser != null ? currentUser.rank : 'Новичок'}">Новичок</span>)</span>
@@ -27,14 +38,17 @@
                            style="background: none; border: none; color: #f0f; cursor: pointer; font-family: 'Courier New', monospace; font-size: 1rem; padding: 0; text-decoration: underline;">
                 </form>
             </div>
+            
+            <!-- МЕНЮ ДЛЯ НЕАВТОРИЗОВАННЫХ -->
             <div sec:authorize="!isAuthenticated()" class="user-menu">
                 <a href="/login">[Вход]</a>
                 <a href="/register">[Регистрация]</a>
             </div>
+            
+            <!-- ЛОГОТИП -->
             <div class="logo">QP</div>
         </div>
     </nav>
-    <!-- JavaScript больше не нужен, удаляем -->
 </div>
 </body>
 </html>

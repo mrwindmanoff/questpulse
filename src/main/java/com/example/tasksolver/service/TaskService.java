@@ -32,6 +32,9 @@ public class TaskService {
     
     @Autowired
     private AchievementService achievementService;
+    
+    @Autowired
+    private NotificationService notificationService;
 
     public List<Task> findAllTasks() {
         return taskRepository.findAllByOrderByPraiseCountDescCreatedAtDesc();
@@ -51,14 +54,12 @@ public class TaskService {
         task.setAuthor(author);
         taskRepository.save(task);
         
-        // Записываем активность
         activityRepository.save(new Activity(
             author.getUsername(), 
             "CREATED_TASK", 
             form.getTitle()
         ));
         
-        // Проверяем ачивки
         achievementService.checkAndAwardAchievements(author);
     }
 
@@ -93,14 +94,12 @@ public class TaskService {
         SolvedTask solved = new SolvedTask(solver, task);
         solvedTaskRepository.save(solved);
         
-        // Записываем активность
         activityRepository.save(new Activity(
             solver.getUsername(), 
             "SOLVED_TASK", 
             task.getTitle()
         ));
         
-        // Проверяем ачивки
         achievementService.checkAndAwardAchievements(solver);
 
         return SolveResult.SUCCESS;
@@ -127,7 +126,6 @@ public class TaskService {
         task.setReportCount(task.getReportCount() + 1);
         taskRepository.save(task);
         
-        // Записываем активность
         activityRepository.save(new Activity(
             reporter.getUsername(), 
             "REPORTED_TASK", 
@@ -154,7 +152,6 @@ public class TaskService {
         task.setPraiseCount(task.getPraiseCount() + 1);
         taskRepository.save(task);
         
-        // Записываем активность
         activityRepository.save(new Activity(
             user.getUsername(), 
             "PRAISED_TASK", 
@@ -186,6 +183,8 @@ public class TaskService {
                 User reporter = report.getUser();
                 reporter.setTotalXp(reporter.getTotalXp() + 1);
                 userRepository.save(reporter);
+                notificationService.createNotification(reporter, "REPORT_REWARD", 
+                    "Ваша жалоба на задачу \"" + task.getTitle() + "\" была рассмотрена. +1 XP");
             }
         }
 

@@ -19,6 +19,25 @@
         <p th:if="${profileUser.banned}"><strong>Статус:</strong> <span style="color: #ff4444;">ЗАБАНЕН</span></p>
     </div>
 
+    <!-- Достижения пользователя -->
+    <div th:if="${userAchievements != null and !userAchievements.isEmpty()}" style="margin-top: 2rem;">
+        <h2 style="color: #f0f;">🏆 Достижения пользователя</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+            <div th:each="ach : ${userAchievements}" 
+                 style="background: #1a1f2f; border: 2px solid #ffaa00; padding: 1rem; border-radius: 10px; width: 200px;">
+                <div style="font-size: 2rem; text-align: center; color: #ffaa00;">
+                    <span th:if="${ach.type == 'FIRST_TASK'}">➕</span>
+                    <span th:if="${ach.type == 'TEN_TASKS'}">📚</span>
+                    <span th:if="${ach.type == 'FIRST_SOLVE'}">✅</span>
+                    <span th:if="${ach.type == 'TEN_SOLVES'}">🏅</span>
+                </div>
+                <h3 style="color: #ffaa00; margin: 0.5rem 0;" th:text="${ach.name}">Название</h3>
+                <p style="color: #c0f0f0; font-size: 0.9rem;" th:text="${ach.description}">Описание</p>
+                <p style="color: #0ff; font-size: 0.8rem;" th:text="${ach.earnedAt}">дата</p>
+            </div>
+        </div>
+    </div>
+
     <p><a href="/">← На главную</a></p>
 </div>
 
