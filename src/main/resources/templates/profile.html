@@ -22,6 +22,25 @@
         <p th:if="${user.banned and user.banReason != null}"><strong>Причина бана:</strong> <span th:text="${user.banReason}"></span></p>
     </div>
 
+    <!-- Достижения -->
+    <div th:if="${userAchievements != null and !userAchievements.isEmpty()}" style="margin-top: 2rem;">
+        <h2 style="color: #f0f;">🏆 Достижения</h2>
+        <div style="display: flex; flex-wrap: wrap; gap: 1rem;">
+            <div th:each="ach : ${userAchievements}" 
+                 style="background: #1a1f2f; border: 2px solid #ffaa00; padding: 1rem; border-radius: 10px; width: 200px;">
+                <div style="font-size: 2rem; text-align: center; color: #ffaa00;">
+                    <span th:if="${ach.type == 'FIRST_TASK'}">➕</span>
+                    <span th:if="${ach.type == 'TEN_TASKS'}">📚</span>
+                    <span th:if="${ach.type == 'FIRST_SOLVE'}">✅</span>
+                    <span th:if="${ach.type == 'TEN_SOLVES'}">🏅</span>
+                </div>
+                <h3 style="color: #ffaa00; margin: 0.5rem 0;" th:text="${ach.name}">Название</h3>
+                <p style="color: #c0f0f0; font-size: 0.9rem;" th:text="${ach.description}">Описание</p>
+                <p style="color: #0ff; font-size: 0.8rem;" th:text="${ach.earnedAt}">дата</p>
+            </div>
+        </div>
+    </div>
+
     <div th:if="${user.admin}" style="margin-top: 2rem; text-align: center;">
         <a href="/admin/users" class="btn btn-danger" style="padding: 1rem 2rem; font-size: 1.2rem; border-width: 3px;">
             ⚡ Управление пользователями (админка)

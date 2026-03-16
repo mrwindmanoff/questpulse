@@ -13,6 +13,9 @@
             <a sec:authorize="isAuthenticated()" th:if="${currentUser != null and currentUser.admin}" href="/admin/users">Админка</a>
         </div>
         <div class="nav-right">
+            <div class="online-counter" style="color: #0ff; border: 1px solid #0ff; padding: 5px 10px; border-radius: 20px;">
+                👥 <span id="online-counter">0</span> онлайн
+            </div>
             <div sec:authorize="isAuthenticated()" class="user-menu">
                 <span>Привет, <a th:href="@{'/user/' + ${#authentication.name}}">[[${#authentication.name}]]</a></span>
                 <span>(Звание: <span th:text="${currentUser != null ? currentUser.rank : 'Новичок'}">Новичок</span>)</span>
@@ -29,6 +32,7 @@
             <div class="logo">QP</div>
         </div>
     </nav>
+    <script src="/js/online-counter.js"></script>
 </div>
 </body>
 </html>

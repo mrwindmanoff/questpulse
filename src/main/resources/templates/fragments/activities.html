@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+</head>
+<body>
+<div th:fragment="activitiesList">
+    <div class="activities-container" style="margin-top: 2rem; background: #1a1f2f; border: 2px solid #0ff; padding: 1rem;">
+        <h3 style="color: #f0f; margin-top: 0;">📢 Последние действия</h3>
+        <div class="activities-list" style="max-height: 200px; overflow-y: auto;">
+            <div th:each="activity : ${activities}" 
+                 style="padding: 0.5rem; border-bottom: 1px dashed #0ff; color: #c0f0f0;">
+                <span th:text="${activity.timestamp}">2026-03-16</span> - 
+                <a th:href="@{'/user/' + ${activity.username}}" style="color: #f0f;" th:text="${activity.username}">user</a>
+                <span th:if="${activity.action == 'CREATED_TASK'}">➕ создал задачу "</span>
+                <span th:if="${activity.action == 'SOLVED_TASK'}">✅ решил задачу "</span>
+                <span th:if="${activity.action == 'REPORTED_TASK'}">⚠️ пожаловался на задачу "</span>
+                <span th:if="${activity.action == 'PRAISED_TASK'}">👍 похвалил задачу "</span>
+                <span style="color: #0ff;" th:text="${activity.taskTitle}">название</span>"
+            </div>
+        </div>
+    </div>
+</div>
+</body>
+</html>

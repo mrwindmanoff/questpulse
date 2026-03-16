@@ -2,11 +2,7 @@ package com.example.tasksolver.service;
 
 import com.example.tasksolver.dto.TaskForm;
 import com.example.tasksolver.model.*;
-import com.example.tasksolver.repository.PraiseRepository;
-import com.example.tasksolver.repository.ReportRepository;
-import com.example.tasksolver.repository.SolvedTaskRepository;
-import com.example.tasksolver.repository.TaskRepository;
-import com.example.tasksolver.repository.UserRepository;
+import com.example.tasksolver.repository.*;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -30,9 +26,14 @@ public class TaskService {
     
     @Autowired
     private PraiseRepository praiseRepository;
+    
+    @Autowired
+    private ActivityRepository activityRepository;
+    
+    @Autowired
+    private AchievementService achievementService;
 
     public List<Task> findAllTasks() {
-        // Сортируем по количеству похвал (сначала с большим количеством)
         return taskRepository.findAllByOrderByPraiseCountDescCreatedAtDesc();
     }
 
@@ -49,6 +50,16 @@ public class TaskService {
         task.setDifficulty(form.getDifficulty());
         task.setAuthor(author);
         taskRepository.save(task);
+        
+        // Записываем активность
+        activityRepository.save(new Activity(
+            author.getUsername(), 
+            "CREATED_TASK", 
+            form.getTitle()
+        ));
+        
+        // Проверяем ачивки
+        achievementService.checkAndAwardAchievements(author);
     }
 
     @Transactional
@@ -81,6 +92,16 @@ public class TaskService {
 
         SolvedTask solved = new SolvedTask(solver, task);
         solvedTaskRepository.save(solved);
+        
+        // Записываем активность
+        activityRepository.save(new Activity(
+            solver.getUsername(), 
+            "SOLVED_TASK", 
+            task.getTitle()
+        ));
+        
+        // Проверяем ачивки
+        achievementService.checkAndAwardAchievements(solver);
 
         return SolveResult.SUCCESS;
     }
@@ -105,6 +126,13 @@ public class TaskService {
 
         task.setReportCount(task.getReportCount() + 1);
         taskRepository.save(task);
+        
+        // Записываем активность
+        activityRepository.save(new Activity(
+            reporter.getUsername(), 
+            "REPORTED_TASK", 
+            task.getTitle()
+        ));
 
         return ReportResult.SUCCESS;
     }
@@ -125,6 +153,13 @@ public class TaskService {
 
         task.setPraiseCount(task.getPraiseCount() + 1);
         taskRepository.save(task);
+        
+        // Записываем активность
+        activityRepository.save(new Activity(
+            user.getUsername(), 
+            "PRAISED_TASK", 
+            task.getTitle()
+        ));
 
         return PraiseResult.SUCCESS;
     }

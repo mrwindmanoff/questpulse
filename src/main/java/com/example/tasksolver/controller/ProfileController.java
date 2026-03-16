@@ -1,6 +1,7 @@
 package com.example.tasksolver.controller;
 
 import com.example.tasksolver.model.User;
+import com.example.tasksolver.repository.AchievementRepository;
 import com.example.tasksolver.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.security.core.Authentication;
@@ -14,6 +15,9 @@ public class ProfileController {
 
     @Autowired
     private UserService userService;
+    
+    @Autowired
+    private AchievementRepository achievementRepository;
 
     private User getCurrentUser() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -31,6 +35,7 @@ public class ProfileController {
             return "redirect:/login";
         }
         model.addAttribute("user", currentUser);
+        model.addAttribute("userAchievements", achievementRepository.findByUserOrderByEarnedAtDesc(currentUser));
         return "profile";
     }
 }
