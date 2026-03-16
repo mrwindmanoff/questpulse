@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>Уведомления</title>
+    <link rel="stylesheet" href="/css/style.css">
+</head>
+<body>
+<div th:replace="~{fragments/navbar :: navbar}"></div>
+
+<div class="container">
+    <h1>Уведомления</h1>
+    
+    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+        <p style="color: #c0f0f0;">Непрочитанных: <span style="color: #ff4444; font-weight: bold;" th:text="${unreadCount}">0</span></p>
+        <form method="post" th:action="@{/notifications/read-all}">
+            <button type="submit" class="btn btn-primary">Прочитать все</button>
+        </form>
+    </div>
+    
+    <div th:if="${notifications.isEmpty()}" style="text-align: center; padding: 3rem; border: 2px dashed #0ff;">
+        <p style="color: #c0f0f0; font-size: 1.2rem;">У вас пока нет уведомлений</p>
+    </div>
+    
+    <div th:if="${!notifications.isEmpty()}" class="notifications-list">
+        <div th:each="notif : ${notifications}" 
+             style="background: ${notif.read ? '#1a1f2f' : '#2a2f3f'}; border: 2px solid ${notif.read ? '#0ff' : '#f0f'}; padding: 1rem; margin-bottom: 1rem; border-radius: 5px; display: flex; justify-content: space-between; align-items: center;">
+            <div style="flex: 1;">
+                <p style="color: #c0f0f0; margin: 0; font-weight: ${notif.read ? 'normal' : 'bold'};" th:text="${notif.message}">Сообщение</p>
+                <p style="color: #0ff; font-size: 0.8rem; margin: 5px 0 0 0;" th:text="${notif.createdAt}">дата</p>
+            </div>
+            <form th:if="${!notif.read}" method="post" th:action="@{'/notifications/read/' + ${notif.id}}" style="margin-left: 1rem;">
+                <button type="submit" class="btn" style="padding: 0.3rem 0.8rem;">✓</button>
+            </form>
+        </div>
+    </div>
+    
+    <p style="margin-top: 2rem;"><a href="/">← На главную</a></p>
+</div>
+
+<div th:replace="~{fragments/footer :: footer}"></div>
+</body>
+</html>
