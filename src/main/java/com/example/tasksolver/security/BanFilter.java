@@ -15,6 +15,8 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.filter.OncePerRequestFilter;
 
 import java.io.IOException;
+import java.util.Arrays;
+import java.util.List;
 
 @Component
 public class BanFilter extends OncePerRequestFilter {
@@ -24,29 +26,32 @@ public class BanFilter extends OncePerRequestFilter {
     @Autowired
     private UserRepository userRepository;
 
+    // Список путей, которые не требуют проверки бана
+    private static final List<String> PUBLIC_PATHS = Arrays.asList(
+        "/css/", "/js/", "/h2-console", "/favicon.ico",
+        "/login", "/logout", "/logout-success", "/register",
+        "/forgot-password", "/reset-password", "/api/online-count"
+    );
+
     @Override
     protected void doFilterInternal(HttpServletRequest request,
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         
-        // Пропускаем статические ресурсы
         String path = request.getRequestURI();
-        if (path.startsWith("/css/") || path.startsWith("/js/") || 
-            path.startsWith("/h2-console") || path.equals("/favicon.ico")) {
-            filterChain.doFilter(request, response);
-            return;
-        }
-
-        // Пропускаем страницу логина и выхода
-        if (path.equals("/login") || path.equals("/logout") || path.equals("/logout-success")) {
-            filterChain.doFilter(request, response);
-            return;
+        
+        // 1. Проверяем публичные пути
+        for (String publicPath : PUBLIC_PATHS) {
+            if (path.startsWith(publicPath)) {
+                filterChain.doFilter(request, response);
+                return;
+            }
         }
 
         try {
             Authentication auth = SecurityContextHolder.getContext().getAuthentication();
             
-            // Если пользователь не аутентифицирован - пропускаем
+            // 2. Если пользователь не аутентифицирован - пропускаем
             if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
                 filterChain.doFilter(request, response);
                 return;
@@ -55,20 +60,19 @@ public class BanFilter extends OncePerRequestFilter {
             String username = auth.getName();
             logger.debug("Checking ban status for user: {}", username);
             
-            // Проверяем бан
-            boolean isBanned = false;
+            // 3. Проверяем бан
+            User user = null;
             try {
-                User user = userRepository.findByUsername(username).orElse(null);
-                isBanned = user != null && user.isBanned();
+                user = userRepository.findByUsername(username).orElse(null);
             } catch (Exception e) {
                 logger.error("Database error while checking ban for user: {}", username, e);
-                // При ошибке БД пропускаем запрос
                 filterChain.doFilter(request, response);
                 return;
             }
             
-            if (isBanned) {
-                logger.info("Banned user {} tried to access the site", username);
+            // 4. Если пользователь забанен
+            if (user != null && user.isBanned()) {
+                logger.info("Banned user {} tried to access: {}", username, path);
                 
                 // Очищаем контекст безопасности
                 SecurityContextHolder.clearContext();
@@ -79,16 +83,15 @@ public class BanFilter extends OncePerRequestFilter {
                 }
                 
                 // Перенаправляем на страницу входа с сообщением о бане
-                // И ВАЖНО: не вызываем дальше filterChain
                 response.sendRedirect("/login?banned");
-                return;
+                return; // ВАЖНО: не продолжаем цепочку
             }
             
-            // Если не забанен - продолжаем цепочку
+            // 5. Если не забанен - продолжаем
             filterChain.doFilter(request, response);
             
         } catch (Exception e) {
-            logger.error("Unexpected error in BanFilter", e);
+            logger.error("Unexpected error in BanFilter for path: {}", path, e);
             // В случае любой ошибки пропускаем запрос, чтобы сайт работал
             filterChain.doFilter(request, response);
         }
