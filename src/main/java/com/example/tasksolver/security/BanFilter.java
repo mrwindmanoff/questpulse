@@ -29,10 +29,16 @@ public class BanFilter extends OncePerRequestFilter {
                                     HttpServletResponse response,
                                     FilterChain filterChain) throws ServletException, IOException {
         
-        // Пропускаем статические ресурсы (они не требуют проверки)
+        // Пропускаем статические ресурсы
         String path = request.getRequestURI();
         if (path.startsWith("/css/") || path.startsWith("/js/") || 
             path.startsWith("/h2-console") || path.equals("/favicon.ico")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        // Пропускаем страницу логина и выхода
+        if (path.equals("/login") || path.equals("/logout") || path.equals("/logout-success")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -49,39 +55,41 @@ public class BanFilter extends OncePerRequestFilter {
             String username = auth.getName();
             logger.debug("Checking ban status for user: {}", username);
             
-            // Используем try-catch для каждого обращения к базе
+            // Проверяем бан
+            boolean isBanned = false;
             try {
-                userRepository.findByUsername(username).ifPresent(user -> {
-                    if (user.isBanned()) {
-                        logger.info("Banned user {} tried to access the site", username);
-                        
-                        // Очищаем контекст безопасности
-                        SecurityContextHolder.clearContext();
-                        
-                        // Инвалидируем сессию
-                        if (request.getSession(false) != null) {
-                            request.getSession(false).invalidate();
-                        }
-                        
-                        // Перенаправляем на страницу входа с сообщением о бане
-                        try {
-                            response.sendRedirect("/login?banned");
-                            return;
-                        } catch (IOException e) {
-                            logger.error("Error redirecting banned user", e);
-                        }
-                    }
-                });
+                User user = userRepository.findByUsername(username).orElse(null);
+                isBanned = user != null && user.isBanned();
             } catch (Exception e) {
                 logger.error("Database error while checking ban for user: {}", username, e);
-                // В случае ошибки БД - пропускаем запрос, чтобы не ломать сайт
+                // При ошибке БД пропускаем запрос
+                filterChain.doFilter(request, response);
+                return;
             }
             
+            if (isBanned) {
+                logger.info("Banned user {} tried to access the site", username);
+                
+                // Очищаем контекст безопасности
+                SecurityContextHolder.clearContext();
+                
+                // Инвалидируем сессию
+                if (request.getSession(false) != null) {
+                    request.getSession(false).invalidate();
+                }
+                
+                // Перенаправляем на страницу входа с сообщением о бане
+                // И ВАЖНО: не вызываем дальше filterChain
+                response.sendRedirect("/login?banned");
+                return;
+            }
+            
+            // Если не забанен - продолжаем цепочку
             filterChain.doFilter(request, response);
             
         } catch (Exception e) {
             logger.error("Unexpected error in BanFilter", e);
-            // Пропускаем запрос, чтобы сайт продолжал работать
+            // В случае любой ошибки пропускаем запрос, чтобы сайт работал
             filterChain.doFilter(request, response);
         }
     }
