@@ -18,7 +18,7 @@ import java.io.IOException;
 public class BanFilter extends OncePerRequestFilter {
 
     @Autowired
-    private UserRepository userRepository;  // ← Используем репозиторий напрямую, а не сервис
+    private UserRepository userRepository;
 
     @Override
     protected void doFilterInternal(HttpServletRequest request,
@@ -30,10 +30,8 @@ public class BanFilter extends OncePerRequestFilter {
         if (auth != null && auth.isAuthenticated() && !"anonymousUser".equals(auth.getPrincipal())) {
             String username = auth.getName();
             
-            // Используем репозиторий напрямую
             userRepository.findByUsername(username).ifPresent(user -> {
                 if (user.isBanned()) {
-                    // Пользователь забанен - разлогиниваем
                     SecurityContextHolder.clearContext();
                     request.getSession().invalidate();
                     try {
