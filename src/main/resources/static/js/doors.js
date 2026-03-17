@@ -1,4 +1,4 @@
-// Двери с идеальным соприкосновением по середине
+// Быстрые двери с идеальным соприкосновением
 (function() {
     // Создаём двери сразу при загрузке скрипта
     const doorsContainer = document.createElement('div');
@@ -27,7 +27,7 @@
         background: linear-gradient(135deg, #0a0f0f 0%, #1a1f2f 50%, #0a0f0f 100%);
         border-right: 6px solid #0ff;
         box-shadow: 0 0 40px #0ff, 0 0 80px #0ff inset;
-        transition: transform 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         transform: translateX(0);
         z-index: 999999;
         transform-origin: left center;
@@ -46,7 +46,7 @@
         background: linear-gradient(135deg, #1a1f2f 0%, #0a0f0f 50%, #1a1f2f 100%);
         border-left: 6px solid #f0f;
         box-shadow: 0 0 40px #f0f, 0 0 80px #f0f inset;
-        transition: transform 1.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        transition: transform 0.6s cubic-bezier(0.68, -0.55, 0.265, 1.55);
         transform: translateX(0);
         z-index: 999999;
         transform-origin: right center;
@@ -90,7 +90,7 @@
     `;
     rightDoor.appendChild(rightPattern);
 
-    // Текст посередине
+    // Текст посередине (тоже быстрее появляется/исчезает)
     const centerText = document.createElement('div');
     centerText.id = 'doors-text';
     centerText.style.cssText = `
@@ -105,7 +105,7 @@
         z-index: 1000000;
         text-align: center;
         opacity: 1;
-        transition: opacity 0.4s ease;
+        transition: opacity 0.3s ease;
         background: rgba(10, 15, 15, 0.9);
         padding: 1.5rem 3rem;
         border: 4px solid #0ff;
@@ -128,7 +128,7 @@
         });
     }
 
-    // Анимация точек
+    // Анимация точек (быстрее не надо, оставим как есть)
     let dotsCount = 0;
     setInterval(function() {
         const dots = document.getElementById('doors-dots');
@@ -149,10 +149,11 @@
             left.style.transform = 'translateX(-100%)';
             right.style.transform = 'translateX(100%)';
             
+            // Текст исчезает быстрее
             if (text) {
                 setTimeout(() => {
                     text.style.opacity = '0';
-                }, 200);
+                }, 150);
             }
         }
     };
@@ -164,12 +165,12 @@
         const text = document.getElementById('doors-text');
         
         if (left && right) {
-            // Сразу показываем текст
+            // Сразу показываем текст (без задержки)
             if (text) {
                 text.style.opacity = '1';
             }
             
-            // Двери съезжаются ровно до соприкосновения (translateX(0))
+            // Двери съезжаются ровно до соприкосновения
             left.style.transform = 'translateX(0)';
             right.style.transform = 'translateX(0)';
         }
@@ -178,7 +179,7 @@
     // При загрузке страницы двери открыты (разъехались)
     setTimeout(() => {
         window.openDoors();
-    }, 100);
+    }, 50); // Ещё быстрее начинаем открывать
 
     // Перехватываем переходы по ссылкам
     document.addEventListener('click', function(e) {
@@ -193,7 +194,7 @@
                 window.closeDoors();
                 setTimeout(() => {
                     window.location.href = link.href;
-                }, 1200);
+                }, 600); // Ждём окончания анимации (0.6 секунды)
             }
         }
     });
@@ -216,6 +217,6 @@
     window.addEventListener('load', function() {
         setTimeout(() => {
             window.openDoors();
-        }, 500);
+        }, 300);
     });
 })();
