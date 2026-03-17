@@ -1,4 +1,4 @@
-// Идеальные двери — длинные, без наложений, с идеальным закрытием
+// Двери с идеальным соприкосновением по середине
 (function() {
     // Создаём двери сразу при загрузке скрипта
     const doorsContainer = document.createElement('div');
@@ -13,17 +13,16 @@
         pointer-events: none;
         display: flex;
         visibility: visible;
-        overflow: hidden; /* Чтобы ничего не вылезало */
     `;
 
-    // Левая дверь (очень длинная — 70% ширины)
+    // Левая дверь (50% ширины)
     const leftDoor = document.createElement('div');
     leftDoor.id = 'left-door-animation';
     leftDoor.style.cssText = `
         position: absolute;
         top: 0;
         left: 0;
-        width: 70%;
+        width: 50%;
         height: 100%;
         background: linear-gradient(135deg, #0a0f0f 0%, #1a1f2f 50%, #0a0f0f 100%);
         border-right: 6px solid #0ff;
@@ -35,14 +34,14 @@
         will-change: transform;
     `;
 
-    // Правая дверь (очень длинная — 70% ширины)
+    // Правая дверь (50% ширины)
     const rightDoor = document.createElement('div');
     rightDoor.id = 'right-door-animation';
     rightDoor.style.cssText = `
         position: absolute;
         top: 0;
         right: 0;
-        width: 70%;
+        width: 50%;
         height: 100%;
         background: linear-gradient(135deg, #1a1f2f 0%, #0a0f0f 50%, #1a1f2f 100%);
         border-left: 6px solid #f0f;
@@ -146,9 +145,9 @@
         const text = document.getElementById('doors-text');
         
         if (left && right) {
-            // Двери разъезжаются в стороны ровно на свою ширину
-            left.style.transform = 'translateX(-70%)'; // Уезжает полностью влево
-            right.style.transform = 'translateX(70%)'; // Уезжает полностью вправо
+            // Двери разъезжаются ровно на свою ширину (50%)
+            left.style.transform = 'translateX(-100%)';
+            right.style.transform = 'translateX(100%)';
             
             if (text) {
                 setTimeout(() => {
