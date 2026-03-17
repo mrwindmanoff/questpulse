@@ -539,3 +539,47 @@ footer h4 {
         font-size: 0.9rem;
     }
 }
+/* Анимация загрузки */
+@keyframes doorGlow {
+    0% { box-shadow: 0 0 20px #0ff; }
+    50% { box-shadow: 0 0 40px #0ff, 0 0 60px #0ff; }
+    100% { box-shadow: 0 0 20px #0ff; }
+}
+
+#left-door, #right-door {
+    animation: doorGlow 2s infinite;
+}
+
+#left-door::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        45deg,
+        transparent,
+        transparent 10px,
+        rgba(0, 255, 255, 0.1) 10px,
+        rgba(0, 255, 255, 0.1) 20px
+    );
+    pointer-events: none;
+}
+
+#right-door::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: repeating-linear-gradient(
+        -45deg,
+        transparent,
+        transparent 10px,
+        rgba(255, 0, 255, 0.1) 10px,
+        rgba(255, 0, 255, 0.1) 20px
+    );
+    pointer-events: none;
+}
