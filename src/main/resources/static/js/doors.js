@@ -1,4 +1,4 @@
-// Анимация длинных дверей с плавным открытием и закрытием
+// Анимация дверей с мгновенным появлением и плавным открытием/закрытием
 (function() {
     // Создаём двери сразу при загрузке скрипта
     const doorsContainer = document.createElement('div');
@@ -12,49 +12,49 @@
         z-index: 999999;
         pointer-events: none;
         display: flex;
-        visibility: hidden;
+        visibility: visible; /* Всегда видимы */
         perspective: 2000px;
     `;
 
-    // Левая дверь (очень длинная - 70% экрана)
+    // Левая дверь (высота 100%, ширина 55%)
     const leftDoor = document.createElement('div');
     leftDoor.id = 'left-door-animation';
     leftDoor.style.cssText = `
         position: absolute;
-        top: -50%;
+        top: 0;
         left: 0;
-        width: 50%;
-        height: 200%;
+        width: 55%;
+        height: 100%;
         background: linear-gradient(135deg, #0a0f0f 0%, #1a1f2f 50%, #0a0f0f 100%);
-        border-right: 8px solid #0ff;
-        box-shadow: 0 0 50px #0ff, 0 0 100px #0ff inset;
-        transition: transform 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        transform: translateX(-100%) translateY(-25%);
+        border-right: 6px solid #0ff;
+        box-shadow: 0 0 40px #0ff, 0 0 80px #0ff inset;
+        transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        transform: translateX(0); /* Изначально закрыты */
         z-index: 999999;
         transform-origin: left center;
     `;
 
-    // Правая дверь (очень длинная - 70% экрана)
+    // Правая дверь (высота 100%, ширина 55%)
     const rightDoor = document.createElement('div');
     rightDoor.id = 'right-door-animation';
     rightDoor.style.cssText = `
         position: absolute;
-        top: -50%;
+        top: 0;
         right: 0;
-        width: 50%;
-        height: 200%;
+        width: 55%;
+        height: 100%;
         background: linear-gradient(135deg, #1a1f2f 0%, #0a0f0f 50%, #1a1f2f 100%);
-        border-left: 8px solid #f0f;
-        box-shadow: 0 0 50px #f0f, 0 0 100px #f0f inset;
-        transition: transform 2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
-        transform: translateX(100%) translateY(-25%);
+        border-left: 6px solid #f0f;
+        box-shadow: 0 0 40px #f0f, 0 0 80px #f0f inset;
+        transition: transform 1.5s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        transform: translateX(0); /* Изначально закрыты */
         z-index: 999999;
         transform-origin: right center;
     `;
 
-    // Неоновые линии на дверях
-    const leftGlowLines = document.createElement('div');
-    leftGlowLines.style.cssText = `
+    // Узор на дверях
+    const leftPattern = document.createElement('div');
+    leftPattern.style.cssText = `
         position: absolute;
         top: 0;
         left: 0;
@@ -69,10 +69,10 @@
         );
         pointer-events: none;
     `;
-    leftDoor.appendChild(leftGlowLines);
+    leftDoor.appendChild(leftPattern);
 
-    const rightGlowLines = document.createElement('div');
-    rightGlowLines.style.cssText = `
+    const rightPattern = document.createElement('div');
+    rightPattern.style.cssText = `
         position: absolute;
         top: 0;
         left: 0;
@@ -87,7 +87,7 @@
         );
         pointer-events: none;
     `;
-    rightDoor.appendChild(rightGlowLines);
+    rightDoor.appendChild(rightPattern);
 
     // Текст посередине
     const centerText = document.createElement('div');
@@ -99,19 +99,20 @@
         transform: translate(-50%, -50%);
         color: #0ff;
         font-family: 'Courier New', monospace;
-        font-size: 3rem;
+        font-size: 2.5rem;
         text-shadow: 0 0 20px #0ff, 0 0 40px #0ff;
         z-index: 1000000;
         text-align: center;
-        opacity: 0;
+        opacity: 1; /* Текст виден сразу */
         transition: opacity 0.5s ease;
-        background: rgba(10, 15, 15, 0.8);
-        padding: 2rem 4rem;
+        background: rgba(10, 15, 15, 0.9);
+        padding: 1.5rem 3rem;
         border: 4px solid #0ff;
         box-shadow: 0 0 50px #0ff;
-        letter-spacing: 10px;
+        letter-spacing: 8px;
+        white-space: nowrap;
     `;
-    centerText.innerHTML = 'ЗАГРУЗКА<div style="font-size: 2rem; margin-top: 1rem;" id="doors-dots">...</div>';
+    centerText.innerHTML = 'ЗАГРУЗКА<div style="font-size: 1.5rem; margin-top: 0.5rem;" id="doors-dots">...</div>';
 
     doorsContainer.appendChild(leftDoor);
     doorsContainer.appendChild(rightDoor);
@@ -141,52 +142,40 @@
         const left = document.getElementById('left-door-animation');
         const right = document.getElementById('right-door-animation');
         const text = document.getElementById('doors-text');
-        const container = document.getElementById('doors-animation');
         
         if (left && right) {
             // Плавно открываем двери (убираем в стороны)
-            left.style.transform = 'translateX(-150%) translateY(-25%)';
-            right.style.transform = 'translateX(150%) translateY(-25%)';
+            left.style.transform = 'translateX(-100%)';
+            right.style.transform = 'translateX(100%)';
+            
+            // Плавно прячем текст
             if (text) {
-                // Прячем текст
                 setTimeout(() => {
                     text.style.opacity = '0';
                 }, 200);
             }
-            
-            // Скрываем контейнер после завершения анимации
-            setTimeout(() => {
-                if (container) {
-                    container.style.visibility = 'hidden';
-                }
-            }, 2000);
         }
     };
 
     // Функция для закрытия дверей (плавно выезжают)
     window.closeDoors = function() {
-        const container = document.getElementById('doors-animation');
         const left = document.getElementById('left-door-animation');
         const right = document.getElementById('right-door-animation');
         const text = document.getElementById('doors-text');
         
-        if (container) {
-            container.style.visibility = 'visible';
-        }
-        
         if (left && right) {
-            // Показываем текст
+            // Сразу показываем текст
             if (text) {
                 text.style.opacity = '1';
             }
             
-            // Закрываем двери (выезжают к центру)
-            left.style.transform = 'translateX(0) translateY(-25%)';
-            right.style.transform = 'translateX(0) translateY(-25%)';
+            // Плавно закрываем двери (выезжают к центру)
+            left.style.transform = 'translateX(0)';
+            right.style.transform = 'translateX(0)';
         }
     };
 
-    // При загрузке страницы двери открыты
+    // При загрузке страницы двери открыты (убираем их)
     setTimeout(() => {
         window.openDoors();
     }, 100);
@@ -200,10 +189,11 @@
             
             if (isSameDomain && isNotLogout) {
                 e.preventDefault();
+                // Мгновенно показываем двери (они всегда видны, просто закрываем их)
                 window.closeDoors();
                 setTimeout(() => {
                     window.location.href = link.href;
-                }, 2000);
+                }, 1500);
             }
         }
     });
