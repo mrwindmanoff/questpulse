@@ -1,4 +1,4 @@
-// Простая и надёжная анимация дверей
+// Анимация дверей с плавным открытием и закрытием
 (function() {
     // Создаём двери сразу при загрузке скрипта
     const doorsContainer = document.createElement('div');
@@ -12,6 +12,7 @@
         z-index: 999999;
         pointer-events: none;
         display: flex;
+        visibility: hidden;
     `;
 
     // Левая дверь
@@ -26,8 +27,8 @@
         background: linear-gradient(135deg, #0a0f0f 0%, #1a1f2f 100%);
         border-right: 4px solid #0ff;
         box-shadow: 0 0 30px #0ff;
-        transition: transform 0.8s ease-in-out;
-        transform: translateX(0);
+        transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        transform: translateX(-100%);
         z-index: 999999;
     `;
 
@@ -43,8 +44,8 @@
         background: linear-gradient(135deg, #1a1f2f 0%, #0a0f0f 100%);
         border-left: 4px solid #f0f;
         box-shadow: 0 0 30px #f0f;
-        transition: transform 0.8s ease-in-out;
-        transform: translateX(0);
+        transition: transform 0.8s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+        transform: translateX(100%);
         z-index: 999999;
     `;
 
@@ -62,6 +63,8 @@
         text-shadow: 0 0 10px #0ff;
         z-index: 1000000;
         text-align: center;
+        opacity: 0;
+        transition: opacity 0.3s ease;
     `;
     centerText.innerHTML = 'ЗАГРУЗКА<span id="doors-dots">...</span>';
 
@@ -93,27 +96,26 @@
         const left = document.getElementById('left-door-animation');
         const right = document.getElementById('right-door-animation');
         const text = document.getElementById('doors-text');
+        const container = document.getElementById('doors-animation');
         
         if (left && right) {
+            // Плавно открываем двери
             left.style.transform = 'translateX(-100%)';
             right.style.transform = 'translateX(100%)';
             if (text) {
-                setTimeout(() => {
-                    text.style.opacity = '0';
-                }, 200);
+                text.style.opacity = '0';
             }
             
-            // Удаляем двери через 1 секунду
+            // Скрываем контейнер после анимации
             setTimeout(() => {
-                const container = document.getElementById('doors-animation');
                 if (container) {
-                    container.style.display = 'none';
+                    container.style.visibility = 'hidden';
                 }
-            }, 1000);
+            }, 800);
         }
     };
 
-    // Функция для закрытия дверей
+    // Функция для закрытия дверей (с плавной анимацией)
     window.closeDoors = function() {
         const container = document.getElementById('doors-animation');
         const left = document.getElementById('left-door-animation');
@@ -121,25 +123,29 @@
         const text = document.getElementById('doors-text');
         
         if (container) {
-            container.style.display = 'flex';
+            // Показываем контейнер перед анимацией
+            container.style.visibility = 'visible';
         }
+        
         if (left && right) {
-            left.style.transform = 'translateX(0)';
-            right.style.transform = 'translateX(0)';
+            // Сначала показываем текст
             if (text) {
                 text.style.opacity = '1';
             }
+            
+            // Небольшая задержка перед закрытием дверей для плавности
+            setTimeout(() => {
+                // Плавно закрываем двери
+                left.style.transform = 'translateX(0)';
+                right.style.transform = 'translateX(0)';
+            }, 50);
         }
     };
 
-    // Автоматически открываем двери после загрузки
-    if (document.readyState === 'loading') {
-        document.addEventListener('DOMContentLoaded', function() {
-            setTimeout(window.openDoors, 500);
-        });
-    } else {
-        setTimeout(window.openDoors, 500);
-    }
+    // При загрузке страницы двери открыты (по умолчанию)
+    setTimeout(() => {
+        window.openDoors();
+    }, 100);
 
     // Перехватываем переходы по ссылкам
     document.addEventListener('click', function(e) {
@@ -150,16 +156,29 @@
             
             if (isSameDomain && isNotLogout) {
                 e.preventDefault();
+                // Плавно закрываем двери перед переходом
                 window.closeDoors();
                 setTimeout(() => {
                     window.location.href = link.href;
-                }, 300);
+                }, 800); // Ждём окончания анимации закрытия
             }
         }
     });
 
-    // Перехватываем отправку форм
+    // Перехватываем отправку форм (например, логин)
     document.addEventListener('submit', function(e) {
-        window.closeDoors();
+        const form = e.target;
+        // Проверяем, что это не logout (чтобы не закрывать двери при выходе)
+        if (!form.action || !form.action.includes('logout')) {
+            window.closeDoors();
+        }
+    });
+
+    // Для кнопки назад в браузере
+    window.addEventListener('pageshow', function(event) {
+        if (event.persisted) {
+            // Страница загружена из кэша (при нажатии "назад")
+            window.openDoors();
+        }
     });
 })();
